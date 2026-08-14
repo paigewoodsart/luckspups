@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { createServerClient } from "@/lib/supabase-server";
 
 export async function POST(request: Request, ctx: RouteContext<"/api/admin/animals/[id]">) {
@@ -43,6 +44,15 @@ export async function POST(request: Request, ctx: RouteContext<"/api/admin/anima
       .eq("id", animalId);
     if (linkError) return NextResponse.json({ error: linkError.message }, { status: 500 });
   }
+
+  // Saving here only refreshes the edit page itself by default -- explicitly
+  // bust the cache for every other place this animal's data appears, so the
+  // list, the public roster, and detail views pick up the change right away
+  // instead of showing a stale cached version until they'd naturally revalidate.
+  revalidatePath("/admin/animals");
+  revalidatePath(`/admin/animals/${animalId}`);
+  revalidatePath("/");
+  revalidatePath("/selected");
 
   return NextResponse.json({ success: true });
 }

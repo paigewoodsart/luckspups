@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { createServerClient } from "@/lib/supabase-server";
 
 interface StagedAnimalRow {
@@ -170,6 +171,13 @@ export async function POST(
   }
 
   await supabase.from("uploads").update({ status: "published" }).eq("id", uploadId);
+
+  // Same cache-busting as the animal editor: without this, the public
+  // roster and admin animals list can keep showing pre-publish data until
+  // they'd naturally revalidate on their own.
+  revalidatePath("/");
+  revalidatePath("/selected");
+  revalidatePath("/admin/animals");
 
   return NextResponse.json({ success: true });
 }
