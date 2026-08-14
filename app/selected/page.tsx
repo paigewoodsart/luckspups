@@ -77,6 +77,12 @@ export default function SelectedPage() {
           guarantee every animal selected is still available &mdash; please
           confirm with us before finalizing transport plans.
         </p>
+        <p className="mx-auto mt-2 max-w-lg text-sm italic text-brown-soft">
+          Selecting isn&rsquo;t booking: exporting this list sends us a
+          request, it doesn&rsquo;t reserve anything. The site won&rsquo;t
+          update immediately &mdash; animals stay listed until we&rsquo;ve
+          reviewed and approved the transport on our end.
+        </p>
         <p className="mt-3">
           <Link href="/" className="text-sm font-semibold text-sky-deep underline">
             ← Back to full roster
