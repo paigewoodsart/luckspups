@@ -26,13 +26,23 @@ export function AdminHeader({ title }: { title: string }) {
           </Link>
           <p className="text-sm text-brown-soft">{title}</p>
         </div>
-        <button
-          type="button"
-          onClick={handleSignOut}
-          className="rounded-full border border-sky-deep px-4 py-1.5 text-sm font-semibold text-sky-deep transition-colors hover:bg-cream-soft"
-        >
-          Sign out
-        </button>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/admin/help"
+            aria-label="Help"
+            title="Help"
+            className="flex h-7 w-7 items-center justify-center rounded-full border border-sky-deep/50 text-sm text-sky-deep/70 transition-colors hover:border-sky-deep hover:text-sky-deep"
+          >
+            ?
+          </Link>
+          <button
+            type="button"
+            onClick={handleSignOut}
+            className="rounded-full border border-sky-deep px-4 py-1.5 text-sm font-semibold text-sky-deep transition-colors hover:bg-cream-soft"
+          >
+            Sign out
+          </button>
+        </div>
       </div>
     </header>
   );

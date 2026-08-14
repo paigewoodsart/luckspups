@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { getAnimals } from "@/lib/data/animals";
 import { AnimalBrowser } from "@/components/public/AnimalBrowser";
 import { groupByLitter } from "@/lib/litters";
@@ -18,7 +19,15 @@ export default async function Home() {
 
   return (
     <div className="flex flex-1 flex-col">
-      <header className="border-b border-sky bg-sky-deep px-6 py-10 text-center sm:px-10">
+      <header className="relative border-b border-sky bg-sky-deep px-6 py-10 text-center sm:px-10">
+        <Link
+          href="/help"
+          aria-label="Help"
+          title="Help"
+          className="absolute right-4 top-4 flex h-7 w-7 items-center justify-center rounded-full border border-cream/40 text-sm text-cream/70 transition-colors hover:border-cream hover:text-cream sm:right-6 sm:top-6"
+        >
+          ?
+        </Link>
         <div className="flex items-center justify-center gap-3">
           <Image
             src="/lucks-logo-white.png"
