@@ -99,6 +99,13 @@ export default function HelpPage() {
             animal selected is still available, please confirm with us before
             finalizing transport plans.
           </p>
+          <p className="rounded-lg border border-sky bg-sky-soft px-4 py-3 text-sm text-brown-soft">
+            <strong className="text-brown">Selecting isn&rsquo;t booking:</strong>{" "}
+            Choosing animals and exporting your list sends us a request &mdash;
+            it doesn&rsquo;t reserve anything. The roster won&rsquo;t reflect a
+            transport as confirmed until we&rsquo;ve reviewed and approved it
+            on our end.
+          </p>
         </Section>
 
         <p className="text-brown-soft">For questions please reach out to us directly.</p>

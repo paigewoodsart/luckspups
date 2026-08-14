@@ -110,10 +110,52 @@ export default function AdminHelpPage() {
             Neither system&rsquo;s standard export includes photos, so
             that&rsquo;s handled separately: go to{" "}
             <strong>Manage Animals</strong> from the dashboard, pick an animal,
-            and upload a photo or write a short story for them. These live only
-            on the site &mdash; re-uploading a new export never overwrites or
-            removes them.
+            and upload one or more photos or write a short story for them. Pick
+            which photo is primary or delete any of them right there. These
+            live only on the site &mdash; re-uploading a new export never
+            overwrites or removes them.
           </p>
+        </Section>
+
+        <Section title="Changing an Animal's Status">
+          <p>
+            You don&rsquo;t need a new export just to change a status. On{" "}
+            <strong>Manage Animals</strong>, every animal has a status dropdown
+            right in the list. Change as many as you like, then hit the{" "}
+            <strong>Save changes</strong> bar that appears at the bottom &mdash;
+            nothing is saved until you do.
+          </p>
+        </Section>
+
+        <Section title="What Each Status Means on the Site">
+          <p>
+            The public roster relabels statuses for partners &mdash; the
+            underlying value you set is what matters, here&rsquo;s what each
+            one actually does:
+          </p>
+          <ul className="list-disc space-y-2 pl-5">
+            <li>
+              <strong>Status Pending</strong> &mdash; shows as &ldquo;Available.&rdquo;
+              Fully browsable and selectable for transport.
+            </li>
+            <li>
+              <strong>Available</strong> &mdash; shows as &ldquo;Up for Local
+              Adoption.&rdquo; Still visible and clickable, but the transport
+              select checkbox is hidden &mdash; use this when an animal is up
+              for adoption locally, not transport.
+            </li>
+            <li>
+              <strong>Foster To Adopt</strong> and <strong>Socialization Hold</strong>{" "}
+              &mdash; shown as-is, fully browsable and selectable.
+            </li>
+            <li>
+              <strong>Transport Approved</strong> &mdash; shows as &ldquo;Transport
+              Pending/Unavailable.&rdquo; Pulled out of its litter/individual
+              listing entirely, made unclickable, and shown in its own section
+              at the very bottom of the page. Use this for animals not
+              currently open to transport requests.
+            </li>
+          </ul>
         </Section>
 
         <Section title="Good Habits">
@@ -127,9 +169,11 @@ export default function AdminHelpPage() {
             refreshed, never duplicated.
           </Tip>
           <Tip>
-            Data fields (status, breed, intake info, etc.) get corrected by
-            re-exporting and re-uploading. Photos and stories are edited
-            directly in <strong>Manage Animals</strong> instead.
+            Data fields like breed or intake info get corrected by
+            re-exporting and re-uploading. Status can be changed either that
+            way or directly in <strong>Manage Animals</strong> &mdash; whichever&rsquo;s
+            faster. Photos and stories are only ever edited in{" "}
+            <strong>Manage Animals</strong>.
           </Tip>
         </Section>
 
