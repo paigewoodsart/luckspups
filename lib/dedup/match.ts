@@ -24,8 +24,8 @@ function daysBetween(a: string, b: string): number {
 }
 
 /**
- * external_id match -> update (Shelterluv's own ID is reliable and always
- * present in practice). Otherwise fuzzy match on name+species, using
+ * external_id match -> update (the source system's own ID is reliable and
+ * always present in practice). Otherwise fuzzy match on name+species, using
  * breed + intake-date proximity to grade confidence -- never auto-merged,
  * always surfaced for the admin to confirm on the review screen.
  */

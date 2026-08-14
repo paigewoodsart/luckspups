@@ -1,6 +1,6 @@
 -- Luck's Pups schema.
--- Field names mirror Shelterluv's "Animals in Care" export
--- (confirmed against a real sample: Animals_In_Care.xlsx).
+-- Field names mirror the "Animals in Care" export shared by Shelterluv
+-- and AnimalsFirst (confirmed against a real sample: Animals_In_Care.xlsx).
 
 create extension if not exists pgcrypto;
 
@@ -10,7 +10,7 @@ create extension if not exists pgcrypto;
 
 create table animals (
   id uuid primary key default gen_random_uuid(),
-  external_id text unique not null,       -- Shelterluv's own animal ID; primary dedup key
+  external_id text unique not null,       -- source system's own animal ID; primary dedup key
   name text not null,
   animal_status text not null,            -- e.g. Transport Approved, Status Pending, Available, Foster To Adopt, Socialization Hold
   species text not null,                  -- e.g. dog, cat
@@ -25,7 +25,7 @@ create table animals (
   altered_in_care text,
   litter_name text,
   birthday date,
-  estimated_age text,                     -- Shelterluv gives this as free text, e.g. "0y, 5m, 0d"
+  estimated_age text,                     -- given as free text, e.g. "0y, 5m, 0d"
   age_group text,
   size_group text,
   breed text,

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AdminHeader } from "@/components/admin/AdminHeader";
+import { Breadcrumbs } from "@/components/admin/Breadcrumbs";
 
 export default function UploadPage() {
   const router = useRouter();
@@ -36,10 +37,12 @@ export default function UploadPage() {
     <div className="flex flex-1 flex-col">
       <AdminHeader title="Upload new data" />
       <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-10 sm:px-10">
+        <Breadcrumbs items={[{ label: "Dashboard", href: "/admin" }, { label: "Upload New Data" }]} />
         <p className="text-brown-soft">
-          Upload a Shelterluv &ldquo;Animals in Care&rdquo; export (.xlsx). Each row
-          gets checked against existing animals before anything goes live &mdash;
-          you&rsquo;ll review and confirm on the next screen.
+          Upload an &ldquo;Animals in Care&rdquo; export (.xlsx) from Shelterluv or
+          AnimalsFirst. Each row gets checked against existing animals before
+          anything goes live &mdash; you&rsquo;ll review and confirm on the next
+          screen.
         </p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">

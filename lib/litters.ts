@@ -28,7 +28,7 @@ function mostCommon(values: (string | null)[]): string | null {
 }
 
 /**
- * Shelterluv's "Groups"/"Litter Name" fields are filled in by hand and
+ * The source system's "Groups"/"Litter Name" fields are filled in by hand and
  * occasionally rope in unrelated animals (e.g. strays found together and
  * given the same estimated birthdate, but not actually littermates). A real
  * litter shares both a birthday and a breed, so both are used as a

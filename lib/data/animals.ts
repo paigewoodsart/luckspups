@@ -28,10 +28,12 @@ interface AnimalRow {
   intake_note: string | null;
   partner_type: string | null;
   tags: string | null;
+  primary_photo_id: string | null;
+  story: string | null;
   updated_at: string;
 }
 
-function toAnimal(row: AnimalRow): Animal {
+function toAnimal(row: AnimalRow, photoUrl: string | null): Animal {
   return {
     id: row.id,
     externalId: row.external_id,
@@ -59,10 +61,21 @@ function toAnimal(row: AnimalRow): Animal {
     intakeNote: row.intake_note,
     partnerType: row.partner_type,
     tags: row.tags,
-    // No animal_photos rows exist yet -- populated once the upload
-    // pipeline (Phase 5+) publishes real photos.
-    photoUrl: null,
+    photoUrl,
+    story: row.story,
   };
+}
+
+async function fetchPhotoMap(ids: string[]): Promise<Map<string, string>> {
+  if (ids.length === 0) return new Map();
+  const { data } = await supabase.from("animal_photos").select("id, storage_path").in("id", ids);
+  return new Map((data ?? []).map((p) => [p.id as string, p.storage_path as string]));
+}
+
+function attachPhotos(rows: AnimalRow[], photoMap: Map<string, string>): Animal[] {
+  return rows.map((row) =>
+    toAnimal(row, row.primary_photo_id ? (photoMap.get(row.primary_photo_id) ?? null) : null)
+  );
 }
 
 export async function getAnimals(): Promise<{
@@ -77,11 +90,14 @@ export async function getAnimals(): Promise<{
   if (error) throw error;
 
   const rows = (data ?? []) as AnimalRow[];
+  const photoMap = await fetchPhotoMap(
+    rows.map((r) => r.primary_photo_id).filter((id): id is string => !!id)
+  );
   const lastUpdated = rows.reduce<string | null>((latest, row) => {
     return !latest || row.updated_at > latest ? row.updated_at : latest;
   }, null);
 
-  return { animals: rows.map(toAnimal), lastUpdated };
+  return { animals: attachPhotos(rows, photoMap), lastUpdated };
 }
 
 export async function getAnimalsByIds(ids: string[]): Promise<Animal[]> {
@@ -90,5 +106,9 @@ export async function getAnimalsByIds(ids: string[]): Promise<Animal[]> {
   const { data, error } = await supabase.from("animals").select("*").in("id", ids);
   if (error) throw error;
 
-  return ((data ?? []) as AnimalRow[]).map(toAnimal);
+  const rows = (data ?? []) as AnimalRow[];
+  const photoMap = await fetchPhotoMap(
+    rows.map((r) => r.primary_photo_id).filter((id): id is string => !!id)
+  );
+  return attachPhotos(rows, photoMap);
 }

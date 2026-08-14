@@ -1,11 +1,12 @@
 import * as XLSX from "xlsx";
 
-// Maps a Shelterluv "Animals in Care" export column header to our field
-// name. Matched case-insensitively so minor header variations don't break
-// the upload. An optional "Photo URL" column is included in anticipation
-// of a future Shelterluv-API-based export that includes photo links --
-// present-day exports simply won't have it, and rows parse the same either
-// way.
+// Maps an "Animals in Care" export column header to our field name.
+// Matched case-insensitively so minor header variations don't break the
+// upload. Works with either Shelterluv's or AnimalsFirst's export, since
+// both produce the same column layout for this report. An optional "Photo
+// URL" column is included in anticipation of a future API-based export
+// that includes photo links -- present-day exports simply won't have it,
+// and rows parse the same either way.
 const COLUMN_MAP: Record<string, string> = {
   id: "externalId",
   name: "name",
@@ -72,14 +73,14 @@ function cleanValue(v: unknown): string | null {
 
 function toIsoDate(v: string | null): string | null {
   if (!v) return null;
-  // Shelterluv exports dates as MM/DD/YYYY.
+  // Both source systems export dates as MM/DD/YYYY.
   const match = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
   if (!match) return null;
   const [, month, day, year] = match;
   return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
 }
 
-export function parseShelterluvWorkbook(buffer: ArrayBuffer): ParsedRow[] {
+export function parseRosterWorkbook(buffer: ArrayBuffer): ParsedRow[] {
   const workbook = XLSX.read(buffer, { type: "array" });
   const sheet = workbook.Sheets[workbook.SheetNames[0]];
   const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: null });

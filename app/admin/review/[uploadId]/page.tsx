@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { AdminHeader } from "@/components/admin/AdminHeader";
+import { Breadcrumbs } from "@/components/admin/Breadcrumbs";
 import { ReviewClient } from "@/components/admin/ReviewClient";
 import { createServerClient } from "@/lib/supabase-server";
 
@@ -42,6 +43,13 @@ export default async function ReviewPage({ params }: PageProps<"/admin/review/[u
     <div className="flex flex-1 flex-col">
       <AdminHeader title={`Review: ${upload.filename}`} />
       <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-10 sm:px-10">
+        <Breadcrumbs
+          items={[
+            { label: "Dashboard", href: "/admin" },
+            { label: "Upload New Data", href: "/admin/upload" },
+            { label: "Review" },
+          ]}
+        />
         <ReviewClient
           uploadId={uploadId}
           stagedAnimals={stagedAnimals ?? []}

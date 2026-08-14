@@ -1,4 +1,5 @@
 import { AdminHeader } from "@/components/admin/AdminHeader";
+import { Breadcrumbs } from "@/components/admin/Breadcrumbs";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -24,35 +25,33 @@ export default function AdminHelpPage() {
     <div className="flex flex-1 flex-col">
       <AdminHeader title="Admin Guide" />
       <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-10 sm:px-10">
+        <Breadcrumbs items={[{ label: "Dashboard", href: "/admin" }, { label: "Help" }]} />
         <p className="mb-10 text-brown-soft">
-          How to keep the roster current &mdash; from Shelterluv export to live
-          site.
+          How to keep the roster current &mdash; from your shelter
+          software&rsquo;s export to live site.
         </p>
 
-        <Section title="1. Export the Report from Shelterluv">
+        <Section title="1. Export the Report">
           <ol className="list-decimal space-y-2 pl-5">
-            <li>Log into Shelterluv.</li>
             <li>
-              Go to <strong>Reports</strong>, and find the{" "}
-              <strong>Animals in Care</strong> report. Depending on your account
-              this may sit under <em>Quick Reports</em> or{" "}
-              <em>External Reports</em> &mdash; the exact label can vary a
-              little.
+              Log into <strong>Shelterluv</strong> or <strong>AnimalsFirst</strong>
+              &nbsp;(whichever you&rsquo;re using) and find the{" "}
+              <strong>Animals in Care</strong> report. If you&rsquo;ve exported
+              this before, check for a saved version first &mdash; it&rsquo;s
+              faster than rebuilding it from scratch.
             </li>
             <li>
               Export it as an <strong>.xlsx</strong> file specifically. This
-              matters: the upload tool is built for Shelterluv&rsquo;s
-              spreadsheet format, so a PDF or CSV export won&rsquo;t work.
+              matters: the upload tool is built for this exact spreadsheet
+              format, so a PDF or CSV export won&rsquo;t work.
             </li>
           </ol>
           <Tip>
-            <strong className="text-brown">About photos:</strong> Today&rsquo;s
-            standard export includes every animal&rsquo;s data but not photos
-            &mdash; new animals will show a paw-print placeholder until a photo
-            is added another way. Once Luck&rsquo;s Rescue has access to
-            Shelterluv&rsquo;s API (a future upgrade), photo links will start
-            coming through in this same file automatically. Nothing about this
-            process will need to change when that happens.
+            <strong className="text-brown">About photos:</strong> A standard
+            export includes every animal&rsquo;s data but not photos &mdash;
+            new animals will show a paw-print placeholder until a photo is
+            added. Use <strong>Manage Animals</strong> (see below) to attach a
+            photo directly on the site &mdash; no export needed for that part.
           </Tip>
         </Section>
 
@@ -83,7 +82,7 @@ export default function AdminHelpPage() {
             </li>
             <li>
               <strong>Updates to existing animals</strong> &mdash; matched by
-              Shelterluv&rsquo;s own ID, their info will simply refresh.
+              their ID in the source system, their info will simply refresh.
             </li>
             <li>
               <strong>Possible duplicates</strong> &mdash; flagged because a
@@ -106,32 +105,44 @@ export default function AdminHelpPage() {
           </p>
         </Section>
 
+        <Section title="Adding Photos & Stories">
+          <p>
+            Neither system&rsquo;s standard export includes photos, so
+            that&rsquo;s handled separately: go to{" "}
+            <strong>Manage Animals</strong> from the dashboard, pick an animal,
+            and upload a photo or write a short story for them. These live only
+            on the site &mdash; re-uploading a new export never overwrites or
+            removes them.
+          </p>
+        </Section>
+
         <Section title="Good Habits">
           <Tip>
             Upload on a regular schedule &mdash; weekly works well &mdash; so
             partners can trust the roster is current.
           </Tip>
           <Tip>
-            Re-uploading the same file is completely safe. Shelterluv&rsquo;s
-            animal IDs mean anything already listed just gets refreshed, never
-            duplicated.
+            Re-uploading the same file is completely safe. Matching happens by
+            each animal&rsquo;s ID, so anything already listed just gets
+            refreshed, never duplicated.
           </Tip>
           <Tip>
-            Right now, corrections happen by re-exporting and re-uploading
-            &mdash; there isn&rsquo;t a separate single-animal edit screen yet.
+            Data fields (status, breed, intake info, etc.) get corrected by
+            re-exporting and re-uploading. Photos and stories are edited
+            directly in <strong>Manage Animals</strong> instead.
           </Tip>
         </Section>
 
         <Section title="Troubleshooting">
           <p>
             <strong>Upload rejected</strong> &mdash; Confirm the file is a real{" "}
-            <code>.xlsx</code> export of Shelterluv&rsquo;s Animals in Care
-            report, not a PDF, CSV, or renamed file.
+            <code>.xlsx</code> export of the Animals in Care report, not a PDF,
+            CSV, or renamed file.
           </p>
           <p>
-            <strong>Wrong info live</strong> &mdash; Re-export a fresh file from
-            Shelterluv and upload again &mdash; the correction overwrites
-            automatically via ID matching.
+            <strong>Wrong info live</strong> &mdash; Re-export a fresh file and
+            upload again &mdash; the correction overwrites automatically via ID
+            matching.
           </p>
           <p>
             <strong>Anything else</strong> &mdash; Contact Paige Woods.

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase-server";
 import { getAnimals } from "@/lib/data/animals";
-import { parseShelterluvWorkbook } from "@/lib/parse/shelterluv-xlsx";
+import { parseRosterWorkbook } from "@/lib/parse/roster-xlsx";
 import { matchAnimal } from "@/lib/dedup/match";
 
 export async function POST(request: Request) {
@@ -13,7 +13,7 @@ export async function POST(request: Request) {
   }
 
   const buffer = await file.arrayBuffer();
-  const rows = parseShelterluvWorkbook(buffer).filter((r) => r.name && r.species);
+  const rows = parseRosterWorkbook(buffer).filter((r) => r.name && r.species);
 
   if (rows.length === 0) {
     return NextResponse.json(
@@ -103,7 +103,7 @@ export async function POST(request: Request) {
     };
   });
 
-  // Photo URLs (present once uploads come from the Shelterluv API) get
+  // Photo URLs (present once uploads come from an API-based export) get
   // stashed in staged_animal_photos for the review screen to pick up --
   // not downloaded yet, that happens at publish time.
   const { data: insertedStaged, error: stagedError } = await supabase

@@ -176,6 +176,10 @@ export function AnimalCard({
                 {animal.animalStatus}
               </span>
 
+              {animal.story && (
+                <p className="mt-4 whitespace-pre-line text-brown">{animal.story}</p>
+              )}
+
               <dl className="mt-4">
                 <DetailRow
                   label="Species"

@@ -1,7 +1,7 @@
--- Dev/staging seed data, generated from a real Shelterluv export
+-- Dev/staging seed data, generated from a real "Animals in Care" export
 -- (Animals_In_Care.xlsx). Safe to re-run: upserts on external_id.
--- Not meant for production -- swap for real published data once
--- the PDF upload pipeline (Phase 5+) is live.
+-- Not meant for production -- superseded by real data uploaded through
+-- the admin panel's Upload new data flow.
 
 insert into animals (external_id, name, animal_status, species, location_status, admission_type, intake_date, groups, heartworm_status, gender, altered, altered_before_arrival, altered_in_care, litter_name, birthday, estimated_age, age_group, size_group, breed, secondary_breed, eye_color, coat_type, intake_note, partner_type, tags) values
   ('1503', 'Dean', 'Transport Approved', 'dog', 'Shelter', 'Owner Surrender', '2026-08-13', 'Gilmore Girls', 'Negative', 'Male', null, 'No', null, 'Gilmore Girls', '2026-03-13', '0y, 5m, 0d', 'Puppy (6 weeks-6 months', null, 'Labrador Retriever', 'Mix', null, null, null, null, null),
