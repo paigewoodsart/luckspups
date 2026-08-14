@@ -58,6 +58,9 @@ export function AnimalBrowser({
   return (
     <>
       <main className="mx-auto w-full max-w-6xl flex-1 space-y-12 px-6 py-8 pb-36 sm:px-10">
+        <p className="text-center text-sm font-semibold text-sky-deep">
+          Click any pup for detailed information
+        </p>
         {litters.map((litter) => {
           const sample = litter.animals[0];
           const details = [
