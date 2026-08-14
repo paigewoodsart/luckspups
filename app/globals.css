@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cream: #FAF3E9;             /* primary background */
+  --color-cream-soft: #FDF9F3;        /* card/surface */
+  --color-sky: #C9E6EF;               /* secondary background, section accents */
+  --color-sky-soft: #E4F4F8;          /* hover states, subtle wash */
+  --color-sky-deep: #3D7C90;          /* primary buttons, links, focus rings */
+  --color-brown: #3B2A1E;             /* primary text */
+  --color-brown-soft: #6B5847;        /* secondary/muted text, metadata */
+  --color-status-available: #8FAE8B;  /* pair with brown text, not white */
+  --color-status-pending: #E8B872;
+  --color-status-inactive: #C7BEB3;
+
+  --font-display: var(--font-anton), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-nunito), ui-sans-serif, system-ui, sans-serif;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-cream);
+  color: var(--color-brown);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--color-cream-soft); }
+::-webkit-scrollbar-thumb { background: var(--color-sky); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-sky-deep); }
