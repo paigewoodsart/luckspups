@@ -47,6 +47,7 @@ export async function buildRecordsPdf(animals: Animal[]): Promise<jsPDF> {
     month: "long",
     day: "numeric",
     year: "numeric",
+    timeZone: "America/New_York",
   });
   doc.text(
     `${animals.length} animal${animals.length === 1 ? "" : "s"} selected · Generated ${today}`,

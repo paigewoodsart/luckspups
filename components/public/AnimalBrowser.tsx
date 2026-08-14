@@ -57,7 +57,7 @@ export function AnimalBrowser({
 
   return (
     <>
-      <main className="mx-auto w-full max-w-6xl flex-1 space-y-12 px-6 py-8 pb-28 sm:px-10">
+      <main className="mx-auto w-full max-w-6xl flex-1 space-y-12 px-6 py-8 pb-36 sm:px-10">
         {litters.map((litter) => {
           const sample = litter.animals[0];
           const details = [
@@ -105,22 +105,22 @@ export function AnimalBrowser({
       </main>
 
       {selectedIds.size > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-sky bg-cream-soft px-6 py-3 shadow-[0_-2px_10px_rgba(0,0,0,0.08)] sm:px-10">
+        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-brown bg-brown px-6 py-5 shadow-[0_-4px_16px_rgba(0,0,0,0.18)] sm:px-10">
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
-            <p className="font-semibold text-brown">
+            <p className="text-lg font-semibold text-cream">
               {selectedIds.size} animal{selectedIds.size === 1 ? "" : "s"} selected
             </p>
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={clear}
-                className="rounded-full border border-sky-deep px-4 py-1.5 text-sm font-semibold text-sky-deep transition-colors hover:bg-sky-soft"
+                className="rounded-full border-2 border-cream px-5 py-2.5 text-base font-semibold text-cream transition-colors hover:bg-cream/10"
               >
                 Clear
               </button>
               <Link
                 href="/selected"
-                className="rounded-full bg-sky-deep px-4 py-1.5 text-sm font-semibold text-cream transition-opacity hover:opacity-90"
+                className="rounded-full bg-sky-deep px-6 py-2.5 text-base font-semibold text-cream transition-opacity hover:opacity-90"
               >
                 View selected
               </Link>
