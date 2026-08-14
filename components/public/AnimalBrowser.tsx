@@ -1,11 +1,89 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import type { Animal } from "@/types/animal";
 import type { LitterGroup } from "@/lib/litters";
 import { useSelection } from "@/lib/useSelection";
 import { AnimalGrid } from "./AnimalGrid";
+
+function StatusFilterDropdown({
+  statuses,
+  value,
+  onChange,
+}: {
+  statuses: string[];
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const options = ["all", ...statuses];
+  const label = value === "all" ? "All statuses" : value;
+
+  useEffect(() => {
+    if (!open) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        className="flex items-center gap-2 rounded-lg border border-sky bg-cream-soft px-4 py-2 text-sm font-semibold text-brown transition-colors hover:border-sky-deep"
+      >
+        {label}
+        <svg
+          viewBox="0 0 12 8"
+          fill="none"
+          aria-hidden="true"
+          className={`h-2.5 w-2.5 text-sky-deep transition-transform ${open ? "rotate-180" : ""}`}
+        >
+          <path
+            d="M1 1L6 6L11 1"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
+
+      {open && (
+        <ul
+          role="listbox"
+          className="absolute left-0 top-full z-30 mt-2 w-56 overflow-hidden rounded-lg border border-sky bg-cream-soft shadow-lg"
+        >
+          {options.map((opt) => (
+            <li key={opt}>
+              <button
+                type="button"
+                role="option"
+                aria-selected={value === opt}
+                onClick={() => {
+                  onChange(opt);
+                  setOpen(false);
+                }}
+                className={`block w-full px-4 py-2 text-left text-sm font-semibold transition-colors hover:bg-sky-soft ${
+                  value === opt ? "bg-sky-soft text-sky-deep" : "text-brown"
+                }`}
+              >
+                {opt === "all" ? "All statuses" : opt}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
 
 function SelectLitterCheckbox({
   litterAnimals,
@@ -47,6 +125,31 @@ export function AnimalBrowser({
   individual: Animal[];
 }) {
   const { selectedIds, toggle, toggleMany, clear } = useSelection();
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  const statuses = useMemo(() => {
+    const set = new Set<string>();
+    litters.forEach((l) => l.animals.forEach((a) => set.add(a.animalStatus)));
+    individual.forEach((a) => set.add(a.animalStatus));
+    return [...set].sort();
+  }, [litters, individual]);
+
+  const filteredLitters = useMemo(() => {
+    if (statusFilter === "all") return litters;
+    return litters
+      .map((l) => ({
+        ...l,
+        animals: l.animals.filter((a) => a.animalStatus === statusFilter),
+      }))
+      .filter((l) => l.animals.length > 0);
+  }, [litters, statusFilter]);
+
+  const filteredIndividual = useMemo(() => {
+    if (statusFilter === "all") return individual;
+    return individual.filter((a) => a.animalStatus === statusFilter);
+  }, [individual, statusFilter]);
+
+  const nothingMatches = filteredLitters.length === 0 && filteredIndividual.length === 0;
 
   function toggleLitter(animals: Animal[], select: boolean) {
     toggleMany(
@@ -58,10 +161,27 @@ export function AnimalBrowser({
   return (
     <>
       <main className="mx-auto w-full max-w-6xl flex-1 space-y-12 px-6 py-8 pb-36 sm:px-10">
-        <p className="text-center text-sm font-semibold text-sky-deep">
-          Click any pup for detailed information
-        </p>
-        {litters.map((litter) => {
+        <div className="flex flex-col items-center gap-3">
+          <p className="text-center text-sm font-semibold text-sky-deep">
+            Click any pup for detailed information
+          </p>
+          <div className="flex items-center gap-2 text-sm text-brown-soft">
+            Status:
+            <StatusFilterDropdown
+              statuses={statuses}
+              value={statusFilter}
+              onChange={setStatusFilter}
+            />
+          </div>
+        </div>
+
+        {nothingMatches && (
+          <p className="py-16 text-center font-display text-3xl text-brown-soft">
+            No animals with this status right now.
+          </p>
+        )}
+
+        {filteredLitters.map((litter) => {
           const sample = litter.animals[0];
           const details = [
             `Litter of ${litter.animals.length}`,
@@ -91,15 +211,15 @@ export function AnimalBrowser({
           );
         })}
 
-        {individual.length > 0 && (
+        {filteredIndividual.length > 0 && (
           <section>
-            {litters.length > 0 && (
+            {filteredLitters.length > 0 && (
               <h2 className="mb-4 font-display uppercase tracking-wide text-3xl text-sky-deep">
                 Individual Animals
               </h2>
             )}
             <AnimalGrid
-              animals={individual}
+              animals={filteredIndividual}
               selectedIds={selectedIds}
               onToggleSelect={toggle}
             />

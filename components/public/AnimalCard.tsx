@@ -55,8 +55,15 @@ export function AnimalCard({
   onToggleSelect?: () => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [photoIndex, setPhotoIndex] = useState(0);
   const variant = statusVariant(animal.animalStatus);
   const secondaryLine = [animal.breed, animal.secondaryBreed].filter(Boolean).join(" / ");
+  const activePhoto = animal.photos[photoIndex] ?? null;
+
+  function openLightbox() {
+    setPhotoIndex(0);
+    setOpen(true);
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -70,13 +77,13 @@ export function AnimalCard({
   return (
     <>
       <article
-        onClick={() => setOpen(true)}
+        onClick={openLightbox}
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
-            setOpen(true);
+            openLightbox();
           }
         }}
         className={`flex cursor-pointer flex-col overflow-hidden rounded-2xl border bg-cream-soft shadow-sm transition-shadow hover:shadow-md ${
@@ -154,10 +161,10 @@ export function AnimalCard({
               >
                 &times;
               </button>
-              {animal.photoUrl ? (
+              {activePhoto ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={animal.photoUrl}
+                  src={activePhoto.url}
                   alt={animal.name}
                   className="max-h-[60vh] w-full object-contain"
                 />
@@ -165,6 +172,25 @@ export function AnimalCard({
                 <PhotoPlaceholder species={animal.species} className="aspect-square w-full" />
               )}
             </div>
+
+            {animal.photos.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto px-5 pt-4">
+                {animal.photos.map((photo, i) => (
+                  <button
+                    key={photo.id}
+                    type="button"
+                    onClick={() => setPhotoIndex(i)}
+                    aria-label={`Photo ${i + 1}`}
+                    className={`h-14 w-14 shrink-0 overflow-hidden rounded-lg border-2 transition-colors ${
+                      i === photoIndex ? "border-sky-deep" : "border-sky"
+                    }`}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={photo.url} alt="" className="h-full w-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
 
             <div className="p-5">
               <h2 className="font-display uppercase tracking-wide text-3xl text-brown">

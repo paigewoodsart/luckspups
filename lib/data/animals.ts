@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import type { Animal } from "@/types/animal";
+import type { Animal, AnimalPhoto } from "@/types/animal";
 
 interface AnimalRow {
   id: string;
@@ -28,12 +28,13 @@ interface AnimalRow {
   intake_note: string | null;
   partner_type: string | null;
   tags: string | null;
-  primary_photo_id: string | null;
   story: string | null;
   updated_at: string;
 }
 
-function toAnimal(row: AnimalRow, photoUrl: string | null): Animal {
+function toAnimal(row: AnimalRow, photos: AnimalPhoto[]): Animal {
+  const primary = photos.find((p) => p.isPrimary) ?? photos[0] ?? null;
+
   return {
     id: row.id,
     externalId: row.external_id,
@@ -61,21 +62,34 @@ function toAnimal(row: AnimalRow, photoUrl: string | null): Animal {
     intakeNote: row.intake_note,
     partnerType: row.partner_type,
     tags: row.tags,
-    photoUrl,
+    photoUrl: primary?.url ?? null,
+    photos,
     story: row.story,
   };
 }
 
-async function fetchPhotoMap(ids: string[]): Promise<Map<string, string>> {
-  if (ids.length === 0) return new Map();
-  const { data } = await supabase.from("animal_photos").select("id, storage_path").in("id", ids);
-  return new Map((data ?? []).map((p) => [p.id as string, p.storage_path as string]));
+async function fetchPhotosByAnimalId(animalIds: string[]): Promise<Map<string, AnimalPhoto[]>> {
+  const map = new Map<string, AnimalPhoto[]>();
+  if (animalIds.length === 0) return map;
+
+  const { data } = await supabase
+    .from("animal_photos")
+    .select("id, animal_id, storage_path, is_primary")
+    .in("animal_id", animalIds)
+    .order("is_primary", { ascending: false })
+    .order("created_at", { ascending: true });
+
+  for (const row of data ?? []) {
+    const list = map.get(row.animal_id) ?? [];
+    list.push({ id: row.id, url: row.storage_path, isPrimary: row.is_primary });
+    map.set(row.animal_id, list);
+  }
+
+  return map;
 }
 
-function attachPhotos(rows: AnimalRow[], photoMap: Map<string, string>): Animal[] {
-  return rows.map((row) =>
-    toAnimal(row, row.primary_photo_id ? (photoMap.get(row.primary_photo_id) ?? null) : null)
-  );
+function attachPhotos(rows: AnimalRow[], photoMap: Map<string, AnimalPhoto[]>): Animal[] {
+  return rows.map((row) => toAnimal(row, photoMap.get(row.id) ?? []));
 }
 
 export async function getAnimals(): Promise<{
@@ -90,9 +104,7 @@ export async function getAnimals(): Promise<{
   if (error) throw error;
 
   const rows = (data ?? []) as AnimalRow[];
-  const photoMap = await fetchPhotoMap(
-    rows.map((r) => r.primary_photo_id).filter((id): id is string => !!id)
-  );
+  const photoMap = await fetchPhotosByAnimalId(rows.map((r) => r.id));
   const lastUpdated = rows.reduce<string | null>((latest, row) => {
     return !latest || row.updated_at > latest ? row.updated_at : latest;
   }, null);
@@ -107,8 +119,6 @@ export async function getAnimalsByIds(ids: string[]): Promise<Animal[]> {
   if (error) throw error;
 
   const rows = (data ?? []) as AnimalRow[];
-  const photoMap = await fetchPhotoMap(
-    rows.map((r) => r.primary_photo_id).filter((id): id is string => !!id)
-  );
+  const photoMap = await fetchPhotosByAnimalId(rows.map((r) => r.id));
   return attachPhotos(rows, photoMap);
 }

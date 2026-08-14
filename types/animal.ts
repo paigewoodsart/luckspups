@@ -33,5 +33,12 @@ export interface Animal {
   partnerType: string | null;
   tags: string | null;
   photoUrl: string | null;
+  photos: AnimalPhoto[];
   story: string | null;
+}
+
+export interface AnimalPhoto {
+  id: string;
+  url: string;
+  isPrimary: boolean;
 }
