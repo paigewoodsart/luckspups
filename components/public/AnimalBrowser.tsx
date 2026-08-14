@@ -6,28 +6,31 @@ import type { Animal } from "@/types/animal";
 import type { LitterGroup } from "@/lib/litters";
 import { useSelection } from "@/lib/useSelection";
 import { Dropdown } from "@/components/Dropdown";
-import { statusLabel, STATUS_EXPLANATIONS } from "@/lib/status";
+import {
+  statusLabel,
+  STATUS_EXPLANATIONS,
+  sortStatusesByLabel,
+  canSelectForTransport,
+} from "@/lib/status";
 import { AnimalGrid } from "./AnimalGrid";
 
 function StatusKeyButton({ statuses }: { statuses: string[] }) {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
-    function handleClickOutside(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
   }, [open]);
 
   return (
-    <div ref={ref} className="relative">
+    <>
       <button
         type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
+        onClick={() => setOpen(true)}
         className="flex h-6 w-6 items-center justify-center rounded-full border border-sky-deep text-xs font-bold text-sky-deep transition-colors hover:bg-sky-soft"
         aria-label="What do these statuses mean?"
         title="What do these statuses mean?"
@@ -36,23 +39,39 @@ function StatusKeyButton({ statuses }: { statuses: string[] }) {
       </button>
 
       {open && (
-        <div className="absolute left-1/2 top-full z-30 mt-2 w-72 -translate-x-1/2 rounded-lg border border-sky bg-cream-soft p-4 text-left shadow-lg">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-brown-soft">
-            What each status means
-          </p>
-          <dl className="space-y-2">
-            {statuses.map((status) => (
-              <div key={status}>
-                <dt className="text-sm font-semibold text-brown">{statusLabel(status)}</dt>
-                <dd className="text-sm text-brown-soft">
-                  {STATUS_EXPLANATIONS[status] ?? "—"}
-                </dd>
-              </div>
-            ))}
-          </dl>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-brown/70 p-4"
+          onClick={() => setOpen(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative max-h-[85vh] w-full max-w-sm overflow-y-auto rounded-2xl bg-cream-soft p-5 shadow-xl"
+          >
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              aria-label="Close"
+              className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-cream text-lg text-brown shadow"
+            >
+              &times;
+            </button>
+            <p className="mb-3 pr-8 text-xs font-semibold uppercase tracking-wide text-brown-soft">
+              What each status means
+            </p>
+            <dl className="space-y-3">
+              {statuses.map((status) => (
+                <div key={status}>
+                  <dt className="text-sm font-semibold text-brown">{statusLabel(status)}</dt>
+                  <dd className="text-sm text-brown-soft">
+                    {STATUS_EXPLANATIONS[status] ?? "—"}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
 
@@ -66,13 +85,16 @@ function SelectLitterCheckbox({
   onToggleLitter: (animals: Animal[], select: boolean) => void;
 }) {
   const ref = useRef<HTMLInputElement>(null);
-  const selectedCount = litterAnimals.filter((a) => selectedIds.has(a.id)).length;
-  const allSelected = selectedCount === litterAnimals.length;
+  const selectable = litterAnimals.filter((a) => canSelectForTransport(a.animalStatus));
+  const selectedCount = selectable.filter((a) => selectedIds.has(a.id)).length;
+  const allSelected = selectable.length > 0 && selectedCount === selectable.length;
   const someSelected = selectedCount > 0 && !allSelected;
 
   useEffect(() => {
     if (ref.current) ref.current.indeterminate = someSelected;
   }, [someSelected]);
+
+  if (selectable.length === 0) return null;
 
   return (
     <label className="flex cursor-pointer items-center" title="Select whole litter">
@@ -81,7 +103,7 @@ function SelectLitterCheckbox({
         ref={ref}
         type="checkbox"
         checked={allSelected}
-        onChange={() => onToggleLitter(litterAnimals, !allSelected)}
+        onChange={() => onToggleLitter(selectable, !allSelected)}
         className="h-7 w-7 accent-sky-deep"
       />
     </label>
@@ -104,13 +126,13 @@ export function AnimalBrowser({
     const set = new Set<string>();
     litters.forEach((l) => l.animals.forEach((a) => set.add(a.animalStatus)));
     individual.forEach((a) => set.add(a.animalStatus));
-    return [...set].sort();
+    return sortStatusesByLabel([...set]);
   }, [litters, individual]);
 
   const allStatuses = useMemo(() => {
     const set = new Set(statuses);
     unavailable.forEach((a) => set.add(a.animalStatus));
-    return [...set].sort();
+    return sortStatusesByLabel([...set]);
   }, [statuses, unavailable]);
 
   const dropdownOptions = useMemo(

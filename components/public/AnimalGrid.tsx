@@ -1,4 +1,5 @@
 import type { Animal } from "@/types/animal";
+import { canSelectForTransport } from "@/lib/status";
 import { AnimalCard } from "./AnimalCard";
 
 export function AnimalGrid({
@@ -29,7 +30,11 @@ export function AnimalGrid({
           key={animal.id}
           animal={animal}
           selected={selectedIds?.has(animal.id) ?? false}
-          onToggleSelect={onToggleSelect ? () => onToggleSelect(animal.id) : undefined}
+          onToggleSelect={
+            onToggleSelect && canSelectForTransport(animal.animalStatus)
+              ? () => onToggleSelect(animal.id)
+              : undefined
+          }
           clickable={clickable}
           showStatus={showStatus}
         />
