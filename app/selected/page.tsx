@@ -72,6 +72,11 @@ export default function SelectedPage() {
           Review your selected animals below, then export a list to send us or
           download a copy with photos for your own records.
         </p>
+        <p className="mx-auto mt-3 max-w-lg text-sm italic text-brown-soft">
+          We do our best to keep this roster up to date, but we can&rsquo;t
+          guarantee every animal selected is still available &mdash; please
+          confirm with us before finalizing transport plans.
+        </p>
         <p className="mt-3">
           <Link href="/" className="text-sm font-semibold text-sky-deep underline">
             ← Back to full roster

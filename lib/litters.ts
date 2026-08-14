@@ -29,11 +29,14 @@ function mostCommon(values: (string | null)[]): string | null {
 
 /**
  * Shelterluv's "Groups"/"Litter Name" fields are filled in by hand and
- * occasionally rope in an unrelated animal (e.g. an adult transferred in
- * alongside a litter of pups). A real litter also shares a birthday, so
- * that's used as a cross-check: within a named group, only animals matching
- * the group's most common birthday are kept together: mismatches are
- * treated as individual rather than falsely grouped.
+ * occasionally rope in unrelated animals (e.g. strays found together and
+ * given the same estimated birthdate, but not actually littermates). A real
+ * litter shares both a birthday and a breed, so both are used as a
+ * cross-check: within a named group, only animals matching the group's most
+ * common birthday AND most common breed are kept together -- e.g. "Murphy
+ * Crew" mixes a Cattle Dog and a Chihuahua under one shared estimated
+ * birthdate, so despite the matching date it correctly falls apart into
+ * individual animals rather than a false litter.
  */
 export function groupByLitter(animals: Animal[]): LitterGrouping {
   const buckets = new Map<string, Animal[]>();
@@ -53,12 +56,14 @@ export function groupByLitter(animals: Animal[]): LitterGrouping {
 
   for (const [key, members] of buckets) {
     const modeBirthday = mostCommon(members.map((a) => a.birthday));
-    const matching = modeBirthday
-      ? members.filter((a) => a.birthday === modeBirthday)
-      : members;
-    const mismatched = modeBirthday
-      ? members.filter((a) => a.birthday !== modeBirthday)
-      : [];
+    const modeBreed = mostCommon(members.map((a) => a.breed));
+
+    const matching = members.filter(
+      (a) =>
+        (!modeBirthday || a.birthday === modeBirthday) &&
+        (!modeBreed || a.breed === modeBreed)
+    );
+    const mismatched = members.filter((a) => !matching.includes(a));
 
     if (matching.length >= 2) {
       litters.push({ key, animals: matching });
