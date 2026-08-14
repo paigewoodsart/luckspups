@@ -1,36 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Luck's Pups
 
-## Getting Started
+A live, public roster of animals in Luck's Rescue's care, built for transport
+and rescue partners to browse, select, and export a transport list. Includes
+an admin panel for uploading Shelterluv/AnimalsFirst "Animals in Care"
+exports (screened for duplicates before publishing) and for attaching photos
+and stories per animal.
 
-First, run the development server:
+**Live site:** https://luckspups.vercel.app
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Stack
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Next.js 16 (App Router, TypeScript) + Tailwind CSS v4
+- Supabase (Postgres, Storage, Auth)
+- Deployed on Vercel
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Local setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. `npm install`
+2. Copy `.env.local.example` to `.env.local` and fill in your Supabase
+   project's URL and keys.
+3. Run the files in `supabase/migrations/` (in order) against your Supabase
+   project via its SQL Editor.
+4. Optionally run `supabase/seed.sql` to load sample data.
+5. `npm run dev`
 
-## Learn More
+## Structure
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `app/` — public roster (`/`), transport selection (`/selected`), help
+  (`/help`), and the admin section (`/admin/*`, gated by `proxy.ts`)
+- `lib/parse/roster-xlsx.ts` — parses an "Animals in Care" .xlsx export
+  (Shelterluv or AnimalsFirst)
+- `lib/dedup/match.ts` — matches uploaded rows against existing animals
+  before publishing
+- `lib/litters.ts` — groups animals into litters, cross-checked by birthday
+  and breed so unrelated animals sharing an estimated birthdate aren't
+  falsely grouped
+- `supabase/migrations/` — schema, run manually via the Supabase SQL Editor
+  (no CLI migration tooling wired up)
