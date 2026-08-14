@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { Animal } from "@/types/animal";
-import { statusVariant, statusBadgeClasses } from "@/lib/status";
+import { statusVariant, statusBadgeClasses, statusLabel } from "@/lib/status";
 
 function cap(value: string | null): string | null {
   return value ? value.charAt(0).toUpperCase() + value.slice(1) : null;
@@ -49,10 +49,14 @@ export function AnimalCard({
   animal,
   selected = false,
   onToggleSelect,
+  clickable = true,
+  showStatus = true,
 }: {
   animal: Animal;
   selected?: boolean;
   onToggleSelect?: () => void;
+  clickable?: boolean;
+  showStatus?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [photoIndex, setPhotoIndex] = useState(0);
@@ -61,6 +65,7 @@ export function AnimalCard({
   const activePhoto = animal.photos[photoIndex] ?? null;
 
   function openLightbox() {
+    if (!clickable) return;
     setPhotoIndex(0);
     setOpen(true);
   }
@@ -77,18 +82,22 @@ export function AnimalCard({
   return (
     <>
       <article
-        onClick={openLightbox}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            openLightbox();
-          }
-        }}
-        className={`flex cursor-pointer flex-col overflow-hidden rounded-2xl border bg-cream-soft shadow-sm transition-shadow hover:shadow-md ${
-          selected ? "border-sky-deep ring-2 ring-sky-deep" : "border-sky"
-        }`}
+        onClick={clickable ? openLightbox : undefined}
+        role={clickable ? "button" : undefined}
+        tabIndex={clickable ? 0 : undefined}
+        onKeyDown={
+          clickable
+            ? (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  openLightbox();
+                }
+              }
+            : undefined
+        }
+        className={`flex flex-col overflow-hidden rounded-2xl border bg-cream-soft shadow-sm transition-shadow ${
+          clickable ? "cursor-pointer hover:shadow-md" : "opacity-70"
+        } ${selected ? "border-sky-deep ring-2 ring-sky-deep" : "border-sky"}`}
       >
         <div className="relative aspect-square w-full">
           {onToggleSelect && (
@@ -124,11 +133,13 @@ export function AnimalCard({
             {animal.name}
           </h3>
 
-          <span
-            className={`w-full whitespace-nowrap rounded-lg px-1 py-0.5 text-center text-[9px] font-semibold text-brown sm:py-1 sm:text-xs ${statusBadgeClasses[variant]}`}
-          >
-            {animal.animalStatus}
-          </span>
+          {showStatus && (
+            <span
+              className={`w-full whitespace-nowrap rounded-lg px-1 py-0.5 text-center text-[9px] font-semibold text-brown sm:py-1 sm:text-xs ${statusBadgeClasses[variant]}`}
+            >
+              {statusLabel(animal.animalStatus)}
+            </span>
+          )}
 
           <p className="truncate text-xs capitalize text-brown-soft sm:text-sm">
             {animal.species}
@@ -199,7 +210,7 @@ export function AnimalCard({
               <span
                 className={`mt-2 inline-block rounded-lg px-3 py-1 text-sm font-semibold text-brown ${statusBadgeClasses[variant]}`}
               >
-                {animal.animalStatus}
+                {statusLabel(animal.animalStatus)}
               </span>
 
               {animal.story && (

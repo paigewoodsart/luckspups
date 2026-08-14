@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getAnimals } from "@/lib/data/animals";
 import { AnimalBrowser } from "@/components/public/AnimalBrowser";
 import { groupByLitter } from "@/lib/litters";
+import { UNAVAILABLE_STATUS } from "@/lib/status";
 
 function formatAsOf(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", {
@@ -15,7 +16,9 @@ function formatAsOf(iso: string) {
 
 export default async function Home() {
   const { animals, lastUpdated } = await getAnimals();
-  const { litters, individual } = groupByLitter(animals);
+  const unavailable = animals.filter((a) => a.animalStatus === UNAVAILABLE_STATUS);
+  const browsable = animals.filter((a) => a.animalStatus !== UNAVAILABLE_STATUS);
+  const { litters, individual } = groupByLitter(browsable);
 
   return (
     <div className="flex flex-1 flex-col">
@@ -68,7 +71,7 @@ export default async function Home() {
         )}
       </header>
 
-      <AnimalBrowser litters={litters} individual={individual} />
+      <AnimalBrowser litters={litters} individual={individual} unavailable={unavailable} />
     </div>
   );
 }

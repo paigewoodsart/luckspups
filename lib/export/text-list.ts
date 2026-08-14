@@ -1,5 +1,6 @@
 import type { Animal } from "@/types/animal";
 import { RESCUE_CONTACT_EMAIL } from "@/lib/config";
+import { statusLabel } from "@/lib/status";
 
 export function buildEmailListText(animals: Animal[]): string {
   const lines: string[] = [];
@@ -18,7 +19,7 @@ export function buildEmailListText(animals: Animal[]): string {
       .join(" · ");
     if (details) lines.push(`   ${details}`);
 
-    lines.push(`   Status: ${animal.animalStatus}`);
+    lines.push(`   Status: ${statusLabel(animal.animalStatus)}`);
     if (animal.intakeNote) lines.push(`   Note: ${animal.intakeNote}`);
     if (animal.tags) lines.push(`   Tags: ${animal.tags}`);
     lines.push("");

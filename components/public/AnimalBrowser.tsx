@@ -5,21 +5,13 @@ import Link from "next/link";
 import type { Animal } from "@/types/animal";
 import type { LitterGroup } from "@/lib/litters";
 import { useSelection } from "@/lib/useSelection";
+import { Dropdown } from "@/components/Dropdown";
+import { statusLabel, STATUS_EXPLANATIONS } from "@/lib/status";
 import { AnimalGrid } from "./AnimalGrid";
 
-function StatusFilterDropdown({
-  statuses,
-  value,
-  onChange,
-}: {
-  statuses: string[];
-  value: string;
-  onChange: (value: string) => void;
-}) {
+function StatusKeyButton({ statuses }: { statuses: string[] }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const options = ["all", ...statuses];
-  const label = value === "all" ? "All statuses" : value;
 
   useEffect(() => {
     if (!open) return;
@@ -35,51 +27,30 @@ function StatusFilterDropdown({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        aria-haspopup="listbox"
         aria-expanded={open}
-        className="flex items-center gap-2 rounded-lg border border-sky bg-cream-soft px-4 py-2 text-sm font-semibold text-brown transition-colors hover:border-sky-deep"
+        className="flex h-6 w-6 items-center justify-center rounded-full border border-sky-deep text-xs font-bold text-sky-deep transition-colors hover:bg-sky-soft"
+        aria-label="What do these statuses mean?"
+        title="What do these statuses mean?"
       >
-        {label}
-        <svg
-          viewBox="0 0 12 8"
-          fill="none"
-          aria-hidden="true"
-          className={`h-2.5 w-2.5 text-sky-deep transition-transform ${open ? "rotate-180" : ""}`}
-        >
-          <path
-            d="M1 1L6 6L11 1"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        i
       </button>
 
       {open && (
-        <ul
-          role="listbox"
-          className="absolute left-0 top-full z-30 mt-2 w-56 overflow-hidden rounded-lg border border-sky bg-cream-soft shadow-lg"
-        >
-          {options.map((opt) => (
-            <li key={opt}>
-              <button
-                type="button"
-                role="option"
-                aria-selected={value === opt}
-                onClick={() => {
-                  onChange(opt);
-                  setOpen(false);
-                }}
-                className={`block w-full px-4 py-2 text-left text-sm font-semibold transition-colors hover:bg-sky-soft ${
-                  value === opt ? "bg-sky-soft text-sky-deep" : "text-brown"
-                }`}
-              >
-                {opt === "all" ? "All statuses" : opt}
-              </button>
-            </li>
-          ))}
-        </ul>
+        <div className="absolute left-1/2 top-full z-30 mt-2 w-72 -translate-x-1/2 rounded-lg border border-sky bg-cream-soft p-4 text-left shadow-lg">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-brown-soft">
+            What each status means
+          </p>
+          <dl className="space-y-2">
+            {statuses.map((status) => (
+              <div key={status}>
+                <dt className="text-sm font-semibold text-brown">{statusLabel(status)}</dt>
+                <dd className="text-sm text-brown-soft">
+                  {STATUS_EXPLANATIONS[status] ?? "—"}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </div>
       )}
     </div>
   );
@@ -120,9 +91,11 @@ function SelectLitterCheckbox({
 export function AnimalBrowser({
   litters,
   individual,
+  unavailable,
 }: {
   litters: LitterGroup[];
   individual: Animal[];
+  unavailable: Animal[];
 }) {
   const { selectedIds, toggle, toggleMany, clear } = useSelection();
   const [statusFilter, setStatusFilter] = useState("all");
@@ -133,6 +106,20 @@ export function AnimalBrowser({
     individual.forEach((a) => set.add(a.animalStatus));
     return [...set].sort();
   }, [litters, individual]);
+
+  const allStatuses = useMemo(() => {
+    const set = new Set(statuses);
+    unavailable.forEach((a) => set.add(a.animalStatus));
+    return [...set].sort();
+  }, [statuses, unavailable]);
+
+  const dropdownOptions = useMemo(
+    () => [
+      { value: "all", label: "All statuses" },
+      ...statuses.map((s) => ({ value: s, label: statusLabel(s) })),
+    ],
+    [statuses]
+  );
 
   const filteredLitters = useMemo(() => {
     if (statusFilter === "all") return litters;
@@ -149,7 +136,8 @@ export function AnimalBrowser({
     return individual.filter((a) => a.animalStatus === statusFilter);
   }, [individual, statusFilter]);
 
-  const nothingMatches = filteredLitters.length === 0 && filteredIndividual.length === 0;
+  const nothingMatches =
+    filteredLitters.length === 0 && filteredIndividual.length === 0 && statusFilter !== "all";
 
   function toggleLitter(animals: Animal[], select: boolean) {
     toggleMany(
@@ -167,11 +155,8 @@ export function AnimalBrowser({
           </p>
           <div className="flex items-center gap-2 text-sm text-brown-soft">
             Status:
-            <StatusFilterDropdown
-              statuses={statuses}
-              value={statusFilter}
-              onChange={setStatusFilter}
-            />
+            <Dropdown options={dropdownOptions} value={statusFilter} onChange={setStatusFilter} />
+            <StatusKeyButton statuses={allStatuses} />
           </div>
         </div>
 
@@ -223,6 +208,18 @@ export function AnimalBrowser({
               selectedIds={selectedIds}
               onToggleSelect={toggle}
             />
+          </section>
+        )}
+
+        {statusFilter === "all" && unavailable.length > 0 && (
+          <section>
+            <h2 className="mb-1 font-display uppercase tracking-wide text-3xl text-brown-soft">
+              {statusLabel(unavailable[0].animalStatus)}
+            </h2>
+            <p className="mb-4 text-sm text-brown-soft">
+              Not currently available for transport.
+            </p>
+            <AnimalGrid animals={unavailable} clickable={false} showStatus={false} />
           </section>
         )}
       </main>

@@ -1,5 +1,6 @@
 import { jsPDF } from "jspdf";
 import type { Animal } from "@/types/animal";
+import { statusLabel } from "@/lib/status";
 
 const BROWN: [number, number, number] = [59, 42, 30]; // --color-brown
 const BROWN_SOFT: [number, number, number] = [107, 88, 71]; // --color-brown-soft
@@ -105,7 +106,7 @@ export async function buildRecordsPdf(animals: Animal[]): Promise<jsPDF> {
       ty += 5;
     }
 
-    doc.text(`Status: ${animal.animalStatus}`, textLeft, ty);
+    doc.text(`Status: ${statusLabel(animal.animalStatus)}`, textLeft, ty);
     ty += 5;
 
     if (animal.intakeNote) {

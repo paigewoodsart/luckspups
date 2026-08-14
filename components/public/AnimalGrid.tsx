@@ -5,10 +5,14 @@ export function AnimalGrid({
   animals,
   selectedIds,
   onToggleSelect,
+  clickable = true,
+  showStatus = true,
 }: {
   animals: Animal[];
   selectedIds?: Set<string>;
   onToggleSelect?: (id: string) => void;
+  clickable?: boolean;
+  showStatus?: boolean;
 }) {
   if (animals.length === 0) {
     return (
@@ -26,6 +30,8 @@ export function AnimalGrid({
           animal={animal}
           selected={selectedIds?.has(animal.id) ?? false}
           onToggleSelect={onToggleSelect ? () => onToggleSelect(animal.id) : undefined}
+          clickable={clickable}
+          showStatus={showStatus}
         />
       ))}
     </div>
