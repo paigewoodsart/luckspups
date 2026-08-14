@@ -31,16 +31,16 @@ export default async function Home() {
         >
           ?
         </Link>
-        <div className="flex items-center justify-center gap-3">
+        <div className="flex items-center justify-center gap-2 sm:gap-3">
           <Image
             src="/lucks-logo-white.png"
             alt=""
             width={558}
             height={500}
             priority
-            className="h-14 w-auto sm:h-16"
+            className="h-9 w-auto shrink-0 sm:h-14 md:h-16"
           />
-          <h1 className="font-display uppercase tracking-wide text-5xl text-white sm:text-6xl">
+          <h1 className="font-display uppercase tracking-wide text-3xl text-white sm:text-5xl md:text-6xl">
             Luck&rsquo;s Pups
           </h1>
         </div>

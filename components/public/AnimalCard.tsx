@@ -3,17 +3,10 @@
 import { useEffect, useState } from "react";
 import type { Animal } from "@/types/animal";
 import { statusVariant, statusBadgeClasses, statusLabel } from "@/lib/status";
+import { formatDate } from "@/lib/format";
 
 function cap(value: string | null): string | null {
   return value ? value.charAt(0).toUpperCase() + value.slice(1) : null;
-}
-
-function formatDate(value: string | null): string | null {
-  if (!value) return null;
-  const d = new Date(`${value}T00:00:00`);
-  return isNaN(d.getTime())
-    ? value
-    : d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 }
 
 function PhotoPlaceholder({ species, className }: { species: string; className?: string }) {

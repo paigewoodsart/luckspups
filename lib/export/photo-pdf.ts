@@ -1,6 +1,6 @@
 import { jsPDF } from "jspdf";
 import type { Animal } from "@/types/animal";
-import { statusLabel } from "@/lib/status";
+import { buildAnimalFields } from "@/lib/export/animal-fields";
 
 const BROWN: [number, number, number] = [59, 42, 30]; // --color-brown
 const BROWN_SOFT: [number, number, number] = [107, 88, 71]; // --color-brown-soft
@@ -70,10 +70,22 @@ export async function buildRecordsPdf(animals: Animal[]): Promise<jsPDF> {
 
   for (const animal of animals) {
     const photo = animal.photoUrl ? await loadImageDataUrl(animal.photoUrl) : null;
-    ensureSpace((photo ? photoSize : 24) + 6);
-
     const textLeft = marginLeft + (photo ? photoSize + 6 : 0);
     const textMaxWidth = maxWidth - (photo ? photoSize + 6 : 0);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    const breedLine = [animal.breed, animal.secondaryBreed].filter(Boolean).join(" / ");
+    const headerLine = [animal.species, breedLine].filter(Boolean).join(" · ");
+    const fieldLines = buildAnimalFields(animal)
+      .filter(({ value }) => value)
+      .map(({ label, value }) => doc.splitTextToSize(`${label}: ${value}`, textMaxWidth) as string[]);
+
+    const headerHeight = headerLine ? 5 : 0;
+    const fieldsHeight = fieldLines.reduce((sum, wrapped) => sum + wrapped.length * 5, 0);
+    const blockHeight = Math.max(photo ? photoSize : 0, 6 + headerHeight + fieldsHeight);
+    ensureSpace(blockHeight + 6);
+
     const blockTop = y;
 
     if (photo) {
@@ -91,26 +103,12 @@ export async function buildRecordsPdf(animals: Animal[]): Promise<jsPDF> {
     doc.setFontSize(10);
     doc.setTextColor(...BROWN_SOFT);
 
-    const breedLine = [animal.breed, animal.secondaryBreed].filter(Boolean).join(" / ");
-    const line1 = [animal.species, breedLine].filter(Boolean).join(" · ");
-    if (line1) {
-      doc.text(line1, textLeft, ty);
+    if (headerLine) {
+      doc.text(headerLine, textLeft, ty);
       ty += 5;
     }
 
-    const line2 = [animal.gender, animal.estimatedAge, animal.sizeGroup]
-      .filter(Boolean)
-      .join(" · ");
-    if (line2) {
-      doc.text(line2, textLeft, ty);
-      ty += 5;
-    }
-
-    doc.text(`Status: ${statusLabel(animal.animalStatus)}`, textLeft, ty);
-    ty += 5;
-
-    if (animal.intakeNote) {
-      const wrapped = doc.splitTextToSize(`Note: ${animal.intakeNote}`, textMaxWidth);
+    for (const wrapped of fieldLines) {
       doc.text(wrapped, textLeft, ty);
       ty += wrapped.length * 5;
     }
