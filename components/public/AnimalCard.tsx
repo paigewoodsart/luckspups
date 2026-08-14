@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import type { Animal } from "@/types/animal";
 import { statusVariant, statusBadgeClasses } from "@/lib/status";
 
@@ -29,18 +32,31 @@ export function AnimalCard({
   selected?: boolean;
   onToggleSelect?: () => void;
 }) {
+  const [expanded, setExpanded] = useState(false);
   const variant = statusVariant(animal.animalStatus);
   const secondaryLine = [animal.breed, animal.secondaryBreed].filter(Boolean).join(" / ");
+  const clamp = expanded ? "" : "truncate";
 
   return (
     <article
-      className={`flex flex-col overflow-hidden rounded-2xl border bg-cream-soft shadow-sm transition-shadow hover:shadow-md ${
+      onClick={() => setExpanded((e) => !e)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          setExpanded((v) => !v);
+        }
+      }}
+      aria-expanded={expanded}
+      className={`flex cursor-pointer flex-col overflow-hidden rounded-2xl border bg-cream-soft shadow-sm transition-shadow hover:shadow-md ${
         selected ? "border-sky-deep ring-2 ring-sky-deep" : "border-sky"
       }`}
     >
       <div className="relative aspect-square w-full">
         {onToggleSelect && (
           <label
+            onClick={(e) => e.stopPropagation()}
             className="absolute left-2 top-2 z-10 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-cream-soft/90 shadow"
             title={`Select ${animal.name}`}
           >
@@ -66,41 +82,31 @@ export function AnimalCard({
         )}
       </div>
 
-      <div className="flex flex-1 flex-col gap-2 p-4">
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="font-display uppercase tracking-wide text-lg leading-tight">{animal.name}</h3>
-          <span
-            className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold text-brown ${statusBadgeClasses[variant]}`}
-          >
-            {animal.animalStatus}
-          </span>
-        </div>
+      <div className="flex flex-1 flex-col gap-1 p-2.5 sm:gap-1.5 sm:p-4">
+        <h3
+          className={`font-display uppercase tracking-wide text-sm leading-tight sm:text-lg ${clamp}`}
+        >
+          {animal.name}
+        </h3>
 
-        <p className="text-sm capitalize text-brown-soft">
+        <span
+          className={`w-full rounded-lg px-1 py-0.5 text-center text-[9px] font-semibold text-brown sm:py-1 sm:text-xs ${
+            expanded ? "whitespace-normal" : "whitespace-nowrap"
+          } ${statusBadgeClasses[variant]}`}
+        >
+          {animal.animalStatus}
+        </span>
+
+        <p className={`text-xs capitalize text-brown-soft sm:text-sm ${clamp}`}>
           {animal.species}
           {secondaryLine ? ` · ${secondaryLine}` : ""}
         </p>
 
-        <dl className="mt-1 grid grid-cols-2 gap-x-2 gap-y-1 text-sm text-brown-soft">
-          {animal.gender && (
-            <div>
-              <dt className="sr-only">Gender</dt>
-              <dd>{animal.gender}</dd>
-            </div>
-          )}
-          {animal.estimatedAge && (
-            <div>
-              <dt className="sr-only">Age</dt>
-              <dd>{animal.estimatedAge}</dd>
-            </div>
-          )}
-          {animal.locationStatus && (
-            <div>
-              <dt className="sr-only">Location</dt>
-              <dd>{animal.locationStatus}</dd>
-            </div>
-          )}
-        </dl>
+        <p className="text-xs text-brown-soft sm:text-sm">
+          {[animal.gender, animal.estimatedAge, animal.locationStatus]
+            .filter(Boolean)
+            .join(" · ")}
+        </p>
       </div>
     </article>
   );
