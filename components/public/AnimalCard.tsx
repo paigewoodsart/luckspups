@@ -92,7 +92,12 @@ export function AnimalCard({
           clickable ? "cursor-pointer hover:shadow-md" : "opacity-70"
         } ${selected ? "border-sky-deep ring-2 ring-sky-deep" : "border-sky"}`}
       >
-        <div className="relative aspect-square w-full">
+        {/* pt-[100%] rather than aspect-square: as a flex-col child here, an
+            aspect-ratio height can get squeezed by the text block below it,
+            letting the img fall back to its own natural aspect ratio.
+            Padding-percentage always resolves against width, so this stays
+            square no matter what the flex layout does around it. */}
+        <div className="relative w-full pt-[100%]">
           {onToggleSelect && (
             <label
               onClick={(e) => e.stopPropagation()}
@@ -114,10 +119,10 @@ export function AnimalCard({
             <img
               src={animal.photoUrl}
               alt={animal.name}
-              className="h-full w-full object-cover"
+              className="absolute inset-0 h-full w-full object-cover"
             />
           ) : (
-            <PhotoPlaceholder species={animal.species} className="h-full w-full" />
+            <PhotoPlaceholder species={animal.species} className="absolute inset-0" />
           )}
         </div>
 

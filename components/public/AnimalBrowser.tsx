@@ -188,6 +188,21 @@ export function AnimalBrowser({
           </p>
         )}
 
+        {filteredIndividual.length > 0 && (
+          <section>
+            {filteredLitters.length > 0 && (
+              <h2 className="mb-4 font-display uppercase tracking-wide text-3xl text-sky-deep">
+                Individual Animals
+              </h2>
+            )}
+            <AnimalGrid
+              animals={filteredIndividual}
+              selectedIds={selectedIds}
+              onToggleSelect={toggle}
+            />
+          </section>
+        )}
+
         {filteredLitters.map((litter) => {
           const sample = litter.animals[0];
           const details = [
@@ -217,21 +232,6 @@ export function AnimalBrowser({
             </section>
           );
         })}
-
-        {filteredIndividual.length > 0 && (
-          <section>
-            {filteredLitters.length > 0 && (
-              <h2 className="mb-4 font-display uppercase tracking-wide text-3xl text-sky-deep">
-                Individual Animals
-              </h2>
-            )}
-            <AnimalGrid
-              animals={filteredIndividual}
-              selectedIds={selectedIds}
-              onToggleSelect={toggle}
-            />
-          </section>
-        )}
 
         {statusFilter === "all" && unavailable.length > 0 && (
           <section>

@@ -7,7 +7,13 @@ const BROWN_SOFT: [number, number, number] = [107, 88, 71]; // --color-brown-sof
 const SKY_DEEP: [number, number, number] = [61, 124, 144]; // --color-sky-deep
 const SKY_SOFT: [number, number, number] = [228, 244, 248]; // --color-sky-soft
 
-async function loadImageDataUrl(url: string): Promise<string | null> {
+interface LoadedImage {
+  dataUrl: string;
+  width: number;
+  height: number;
+}
+
+async function loadImage(url: string): Promise<LoadedImage | null> {
   try {
     const res = await fetch(url);
     const blob = await res.blob();
@@ -18,7 +24,11 @@ async function loadImageDataUrl(url: string): Promise<string | null> {
     const ctx = canvas.getContext("2d");
     if (!ctx) return null;
     ctx.drawImage(bitmap, 0, 0);
-    return canvas.toDataURL("image/jpeg", 0.85);
+    return {
+      dataUrl: canvas.toDataURL("image/jpeg", 0.85),
+      width: bitmap.width,
+      height: bitmap.height,
+    };
   } catch {
     return null;
   }
@@ -69,7 +79,7 @@ export async function buildRecordsPdf(animals: Animal[]): Promise<jsPDF> {
   };
 
   for (const animal of animals) {
-    const photo = animal.photoUrl ? await loadImageDataUrl(animal.photoUrl) : null;
+    const photo = animal.photoUrl ? await loadImage(animal.photoUrl) : null;
     const textLeft = marginLeft + (photo ? photoSize + 6 : 0);
     const textMaxWidth = maxWidth - (photo ? photoSize + 6 : 0);
 
@@ -89,7 +99,14 @@ export async function buildRecordsPdf(animals: Animal[]): Promise<jsPDF> {
     const blockTop = y;
 
     if (photo) {
-      doc.addImage(photo, "JPEG", marginLeft, y, photoSize, photoSize);
+      // Fit the whole photo inside the tile without cropping or stretching --
+      // scale to the tile by its longer side and center the shorter side.
+      const scale = Math.min(photoSize / photo.width, photoSize / photo.height);
+      const drawWidth = photo.width * scale;
+      const drawHeight = photo.height * scale;
+      const drawX = marginLeft + (photoSize - drawWidth) / 2;
+      const drawY = y + (photoSize - drawHeight) / 2;
+      doc.addImage(photo.dataUrl, "JPEG", drawX, drawY, drawWidth, drawHeight);
     }
 
     let ty = y + 5;

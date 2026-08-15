@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Animal } from "@/types/animal";
 import { Dropdown } from "@/components/Dropdown";
+import { statusLabel, sortStatusesByLabel } from "@/lib/status";
 
 export function AnimalsListClient({ animals }: { animals: Animal[] }) {
   const router = useRouter();
@@ -14,7 +15,7 @@ export function AnimalsListClient({ animals }: { animals: Animal[] }) {
 
   const statusOptions = useMemo(() => {
     const set = new Set(animals.map((a) => a.animalStatus));
-    return [...set].sort().map((s) => ({ value: s, label: s }));
+    return sortStatusesByLabel([...set]).map((s) => ({ value: s, label: statusLabel(s) }));
   }, [animals]);
 
   function handleStatusChange(animal: Animal, newStatus: string) {

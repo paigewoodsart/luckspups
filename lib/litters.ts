@@ -10,6 +10,24 @@ export interface LitterGrouping {
   individual: Animal[];
 }
 
+function birthdayTimestamp(birthday: string | null): number | null {
+  const time = birthday ? new Date(birthday).getTime() : NaN;
+  return Number.isNaN(time) ? null : time;
+}
+
+// Older animals have earlier birthdays, so an earlier date sorts first.
+// Animals with no recorded birthday can't be placed on the scale, so they
+// sort to the end rather than being guessed as youngest or oldest.
+function sortOldestToYoungest<T extends { birthday: string | null }>(items: T[]): T[] {
+  return [...items].sort((a, b) => {
+    const ta = birthdayTimestamp(a.birthday);
+    const tb = birthdayTimestamp(b.birthday);
+    if (ta === null) return tb === null ? 0 : 1;
+    if (tb === null) return -1;
+    return ta - tb;
+  });
+}
+
 function mostCommon(values: (string | null)[]): string | null {
   const counts = new Map<string, number>();
   for (const v of values) {
@@ -52,7 +70,7 @@ export function groupByLitter(animals: Animal[]): LitterGrouping {
     buckets.get(key)!.push(animal);
   }
 
-  const litters: LitterGroup[] = [];
+  const litterEntries: { group: LitterGroup; birthday: string | null }[] = [];
 
   for (const [key, members] of buckets) {
     const modeBirthday = mostCommon(members.map((a) => a.birthday));
@@ -66,13 +84,13 @@ export function groupByLitter(animals: Animal[]): LitterGrouping {
     const mismatched = members.filter((a) => !matching.includes(a));
 
     if (matching.length >= 2) {
-      litters.push({ key, animals: matching });
+      litterEntries.push({ group: { key, animals: matching }, birthday: modeBirthday });
       individual.push(...mismatched);
     } else {
       individual.push(...members);
     }
   }
 
-  litters.sort((a, b) => b.animals.length - a.animals.length);
-  return { litters, individual };
+  const litters = sortOldestToYoungest(litterEntries).map((entry) => entry.group);
+  return { litters, individual: sortOldestToYoungest(individual) };
 }
