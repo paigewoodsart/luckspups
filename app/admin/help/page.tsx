@@ -151,10 +151,10 @@ export default function AdminHelpPage() {
 
         <Section title="Marking a Priority Animal">
           <p>
-            Use the star button next to an animal&rsquo;s name on{" "}
+            Use the toggle next to an animal&rsquo;s name on{" "}
             <strong>Manage Animals</strong> to flag it as a priority &mdash; a
             first-choice pick for transport partners. It saves the moment you
-            click it, no need to hit Save.
+            switch it, no need to hit Save.
           </p>
           <p>
             Priority animals show a star badge on their public tile and are
