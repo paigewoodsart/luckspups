@@ -23,10 +23,15 @@ export default function SelectedPage() {
 
     async function load() {
       setLoading(true);
-      const result = await getAnimalsByIds([...selectedIds]);
-      if (!cancelled) {
-        setAnimals(result);
-        setLoading(false);
+      try {
+        const result = await getAnimalsByIds([...selectedIds]);
+        if (!cancelled) setAnimals(result);
+      } catch {
+        // A failed fetch shouldn't leave the page stuck on "Loading…"
+        // forever -- fall back to an empty list so the page is usable.
+        if (!cancelled) setAnimals([]);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     }
 

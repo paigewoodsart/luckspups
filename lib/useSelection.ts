@@ -27,8 +27,12 @@ export function useSelection() {
   }, []);
 
   useEffect(() => {
-    if (hydrated) {
+    if (!hydrated) return;
+    try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify([...selectedIds]));
+    } catch {
+      // Storage full/unavailable (e.g. private browsing) -- selection just
+      // won't persist across reloads, not worth crashing the page over.
     }
   }, [selectedIds, hydrated]);
 

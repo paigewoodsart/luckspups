@@ -41,9 +41,18 @@ export async function proxy(request: NextRequest) {
   }
 
   if (user && isLoginPage) {
+    // Redirect on a fresh NextResponse rather than supabaseResponse, so any
+    // session cookies getUser() just refreshed (e.g. a rotated refresh
+    // token) must be copied over by hand -- otherwise the browser keeps the
+    // stale cookie, the next request's refresh fails against it, and the
+    // admin gets bounced back to login despite being signed in.
     const url = request.nextUrl.clone();
     url.pathname = "/admin";
-    return NextResponse.redirect(url);
+    const redirectResponse = NextResponse.redirect(url);
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie);
+    });
+    return redirectResponse;
   }
 
   return supabaseResponse;
