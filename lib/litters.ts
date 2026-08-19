@@ -28,6 +28,13 @@ function sortOldestToYoungest<T extends { birthday: string | null }>(items: T[])
   });
 }
 
+// Priority animals float to the front, but sort is stable so everyone's
+// existing relative order (oldest-to-youngest) is preserved within each
+// priority group.
+function bringPriorityToFront<T>(items: T[], isPriority: (item: T) => boolean): T[] {
+  return [...items].sort((a, b) => Number(isPriority(b)) - Number(isPriority(a)));
+}
+
 function mostCommon(values: (string | null)[]): string | null {
   const counts = new Map<string, number>();
   for (const v of values) {
@@ -91,6 +98,13 @@ export function groupByLitter(animals: Animal[]): LitterGrouping {
     }
   }
 
-  const litters = sortOldestToYoungest(litterEntries).map((entry) => entry.group);
-  return { litters, individual: sortOldestToYoungest(individual) };
+  const litters = bringPriorityToFront(
+    sortOldestToYoungest(litterEntries).map((entry) => entry.group),
+    (litter) => litter.animals.some((a) => a.priority)
+  );
+  const sortedIndividual = bringPriorityToFront(
+    sortOldestToYoungest(individual),
+    (a) => a.priority
+  );
+  return { litters, individual: sortedIndividual };
 }

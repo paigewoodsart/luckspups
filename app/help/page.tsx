@@ -56,6 +56,12 @@ export default function HelpPage() {
             </li>
             <li>Everyone else appears under Individual Animals.</li>
             <li>
+              Animals marked <strong>Priority</strong> (look for the star
+              badge on their photo) are Luck&rsquo;s first-choice picks for
+              transport &mdash; they&rsquo;re listed first, ahead of the rest
+              of the roster.
+            </li>
+            <li>
               Tap any tile to open a full-size view, and more detailed vetting
               and intake information.
             </li>

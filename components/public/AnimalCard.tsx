@@ -114,6 +114,17 @@ export function AnimalCard({
               />
             </label>
           )}
+          {animal.priority && (
+            <span
+              aria-label="Priority animal"
+              title="Priority — first choice for transport"
+              className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-sky-deep text-cream shadow"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4" fill="currentColor">
+                <path d="M12 2.5l2.9 6.26 6.9.9-5 4.87 1.28 6.97L12 17.9l-6.08 3.6L7.2 14.53l-5-4.87 6.9-.9L12 2.5z" />
+              </svg>
+            </span>
+          )}
           {animal.photoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img

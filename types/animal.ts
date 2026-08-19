@@ -35,6 +35,7 @@ export interface Animal {
   photoUrl: string | null;
   photos: AnimalPhoto[];
   story: string | null;
+  priority: boolean;
 }
 
 export interface AnimalPhoto {

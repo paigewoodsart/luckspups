@@ -1,12 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase-server";
 import { revalidateAnimalPages } from "@/lib/revalidate";
-
-function storageKeyFromUrl(url: string): string | null {
-  const marker = "/animal-photos/";
-  const idx = url.indexOf(marker);
-  return idx === -1 ? null : url.slice(idx + marker.length);
-}
+import { storageKeyFromUrl } from "@/lib/storage-keys";
 
 export async function DELETE(
   _request: Request,

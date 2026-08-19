@@ -117,6 +117,22 @@ export default function AdminHelpPage() {
           </p>
         </Section>
 
+        <Section title="Adding an Animal by Hand">
+          <p>
+            Not every animal comes through an upload &mdash; for one from a
+            different partner rescue, or anything else you need to enter
+            yourself, use <strong>+ Add Animal</strong> at the top of{" "}
+            <strong>Manage Animals</strong>.
+          </p>
+          <p>
+            The form covers everything a normal upload would (breed, intake
+            info, health details, and so on), plus you can write a story and
+            add photos right there &mdash; no need to visit the animal&rsquo;s
+            page afterward. Only name, species, and status are required;
+            leave anything else blank if you don&rsquo;t have it.
+          </p>
+        </Section>
+
         <Section title="Changing an Animal's Status">
           <p>
             You don&rsquo;t need a new export just to change a status. On{" "}
@@ -125,6 +141,33 @@ export default function AdminHelpPage() {
             <strong>Save changes</strong> bar that appears at the bottom &mdash;
             nothing is saved until you do.
           </p>
+        </Section>
+
+        <Section title="Marking a Priority Animal">
+          <p>
+            Use the star button next to an animal&rsquo;s name on{" "}
+            <strong>Manage Animals</strong> to flag it as a priority &mdash; a
+            first-choice pick for transport partners. It saves the moment you
+            click it, no need to hit Save.
+          </p>
+          <p>
+            Priority animals show a star badge on their public tile and are
+            listed first on the roster, ahead of everyone else. Flag one
+            animal in a litter and the whole litter moves up together.
+          </p>
+        </Section>
+
+        <Section title="Removing an Animal">
+          <p>
+            Once an animal has left on transport (or otherwise needs to come
+            off the site), click the trash icon on its row in{" "}
+            <strong>Manage Animals</strong> and confirm.
+          </p>
+          <Tip>
+            This is permanent &mdash; it deletes the animal&rsquo;s record and
+            every photo along with it. There&rsquo;s no undo, so double-check
+            you have the right animal before confirming.
+          </Tip>
         </Section>
 
         <Section title="What Each Status Means on the Site">

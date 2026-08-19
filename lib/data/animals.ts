@@ -29,6 +29,7 @@ interface AnimalRow {
   partner_type: string | null;
   tags: string | null;
   story: string | null;
+  priority: boolean;
   updated_at: string;
 }
 
@@ -65,6 +66,7 @@ function toAnimal(row: AnimalRow, photos: AnimalPhoto[]): Animal {
     photoUrl: primary?.url ?? null,
     photos,
     story: row.story,
+    priority: row.priority,
   };
 }
 
