@@ -24,11 +24,22 @@ export function AnimalsListClient({
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [busyPriorityId, setBusyPriorityId] = useState<string | null>(null);
+  const [priorityOverrides, setPriorityOverrides] = useState<Map<string, boolean>>(new Map());
   const [busyDeleteId, setBusyDeleteId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [litterOptions, setLitterOptions] = useState<LitterOption[]>(litters);
   const [createLitterOpen, setCreateLitterOpen] = useState(false);
   const [busyBatchLitter, setBusyBatchLitter] = useState(false);
+  const [syncedAnimals, setSyncedAnimals] = useState(animals);
+
+  // Once a router.refresh() lands with a new animals prop, drop the
+  // optimistic overrides -- adjusted during render (not an effect) per
+  // React's guidance for resetting state in response to a prop change, so
+  // it doesn't cost an extra committed render.
+  if (animals !== syncedAnimals) {
+    setSyncedAnimals(animals);
+    setPriorityOverrides(new Map());
+  }
 
   const statusOptions = useMemo(() => {
     const set = new Set(animals.map((a) => a.animalStatus));
@@ -64,11 +75,13 @@ export function AnimalsListClient({
   }
 
   async function handleTogglePriority(animal: Animal) {
+    const next = !(priorityOverrides.get(animal.id) ?? animal.priority);
+    setPriorityOverrides((prev) => new Map(prev).set(animal.id, next));
     setBusyPriorityId(animal.id);
     await fetch(`/api/admin/animals/${animal.id}/priority`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ priority: !animal.priority }),
+      body: JSON.stringify({ priority: next }),
     });
     setBusyPriorityId(null);
     router.refresh();
@@ -153,7 +166,9 @@ export function AnimalsListClient({
       </div>
 
       <ul className="divide-y divide-sky rounded-2xl border border-sky bg-cream-soft">
-        {animals.map((animal) => (
+        {animals.map((animal) => {
+          const isPriority = priorityOverrides.get(animal.id) ?? animal.priority;
+          return (
           <li
             key={animal.id}
             className="flex flex-wrap items-center justify-between gap-3 px-5 py-4"
@@ -170,36 +185,23 @@ export function AnimalsListClient({
               </label>
               <button
                 type="button"
+                role="switch"
                 onClick={() => handleTogglePriority(animal)}
                 disabled={busyPriorityId === animal.id}
-                aria-pressed={animal.priority}
+                aria-checked={isPriority}
                 aria-label={
-                  animal.priority ? `Unmark ${animal.name} as priority` : `Mark ${animal.name} as priority`
+                  isPriority ? `Unmark ${animal.name} as priority` : `Mark ${animal.name} as priority`
                 }
-                title={animal.priority ? "Priority — click to unmark" : "Mark as priority"}
-                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors disabled:opacity-60 ${
-                  animal.priority
-                    ? "bg-sky-deep text-cream"
-                    : "border border-sky text-brown-soft hover:border-sky-deep"
+                title={isPriority ? "Priority — click to unmark" : "Mark as priority"}
+                className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors disabled:opacity-60 ${
+                  isPriority ? "bg-sky-deep" : "bg-sky"
                 }`}
               >
-                {animal.priority ? (
-                  <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4" fill="currentColor">
-                    <path d="M12 2.5l2.9 6.26 6.9.9-5 4.87 1.28 6.97L12 17.9l-6.08 3.6L7.2 14.53l-5-4.87 6.9-.9L12 2.5z" />
-                  </svg>
-                ) : (
-                  <svg
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                    className="h-4 w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M12 2.5l2.9 6.26 6.9.9-5 4.87 1.28 6.97L12 17.9l-6.08 3.6L7.2 14.53l-5-4.87 6.9-.9L12 2.5z" />
-                  </svg>
-                )}
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-cream-soft shadow transition-transform ${
+                    isPriority ? "translate-x-6" : "translate-x-1"
+                  }`}
+                />
               </button>
               <Link href={`/admin/animals/${animal.id}`} className="hover:underline">
                 <p className="font-display uppercase tracking-wide text-brown">{animal.name}</p>
@@ -255,7 +257,8 @@ export function AnimalsListClient({
               </button>
             </div>
           </li>
-        ))}
+          );
+        })}
       </ul>
 
       {(selectedIds.size > 0 || pending.size > 0) && (
