@@ -39,7 +39,7 @@ export default function UploadPage() {
       <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-10 sm:px-10">
         <Breadcrumbs items={[{ label: "Dashboard", href: "/admin" }, { label: "Upload New Data" }]} />
         <p className="text-brown-soft">
-          Upload an &ldquo;Animals in Care&rdquo; export (.xlsx) from Shelterluv or
+          Upload an &ldquo;Animals in Care&rdquo; export (.xlsx) from
           AnimalsFirst. Each row gets checked against existing animals before
           anything goes live &mdash; you&rsquo;ll review and confirm on the next
           screen.

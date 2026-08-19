@@ -2,9 +2,9 @@
 
 A live, public roster of animals in Luck's Rescue's care, built for transport
 and rescue partners to browse, select, and export a transport list. Includes
-an admin panel for uploading Shelterluv/AnimalsFirst "Animals in Care"
-exports (screened for duplicates before publishing) and for attaching photos
-and stories per animal.
+an admin panel for uploading AnimalsFirst "Animals in Care" exports
+(screened for duplicates before publishing) and for attaching photos and
+stories per animal.
 
 **Live site:** https://luckspups.vercel.app
 
@@ -28,8 +28,8 @@ and stories per animal.
 
 - `app/` — public roster (`/`), transport selection (`/selected`), help
   (`/help`), and the admin section (`/admin/*`, gated by `proxy.ts`)
-- `lib/parse/roster-xlsx.ts` — parses an "Animals in Care" .xlsx export
-  (Shelterluv or AnimalsFirst)
+- `lib/parse/roster-xlsx.ts` — parses an AnimalsFirst "Animals in Care" .xlsx
+  export
 - `lib/dedup/match.ts` — matches uploaded rows against existing animals
   before publishing
 - `lib/litters.ts` — groups animals into litters, cross-checked by birthday

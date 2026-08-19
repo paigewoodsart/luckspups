@@ -1,6 +1,6 @@
-// Raw values are exactly what the source system (Shelterluv/AnimalsFirst)
-// sends, and stay untouched in the database -- these two maps control what
-// the public site actually shows for each one.
+// Raw values are exactly what the source system (AnimalsFirst) sends, and
+// stay untouched in the database -- these two maps control what the public
+// site actually shows for each one.
 
 const DISPLAY_LABELS: Record<string, string> = {
   "Transport Approved": "Transport Pending/Unavailable",

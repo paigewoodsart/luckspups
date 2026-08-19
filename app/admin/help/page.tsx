@@ -34,8 +34,7 @@ export default function AdminHelpPage() {
         <Section title="1. Export the Report">
           <ol className="list-decimal space-y-2 pl-5">
             <li>
-              Log into <strong>Shelterluv</strong> or <strong>AnimalsFirst</strong>
-              &nbsp;(whichever you&rsquo;re using) and find the{" "}
+              Log into <strong>AnimalsFirst</strong> and find the{" "}
               <strong>Animals in Care</strong> report. If you&rsquo;ve exported
               this before, check for a saved version first &mdash; it&rsquo;s
               faster than rebuilding it from scratch.
@@ -103,6 +102,13 @@ export default function AdminHelpPage() {
             roster immediately, and the site&rsquo;s &ldquo;Last updated&rdquo;
             date updates automatically &mdash; no extra step needed.
           </p>
+          <p>
+            Publishing also checks for litters: any group of animals sharing a
+            Group/Litter Name that also share a birthday and breed gets turned
+            into a real litter automatically, so it&rsquo;s available to pick
+            from in the Litter dropdown &mdash; see{" "}
+            <strong>Grouping Animals into Litters</strong> below.
+          </p>
         </Section>
 
         <Section title="Adding Photos & Stories">
@@ -167,6 +173,31 @@ export default function AdminHelpPage() {
             This is permanent &mdash; it deletes the animal&rsquo;s record and
             every photo along with it. There&rsquo;s no undo, so double-check
             you have the right animal before confirming.
+          </Tip>
+        </Section>
+
+        <Section title="Grouping Animals into Litters">
+          <p>
+            Litters usually form on their own: when a publish finds animals
+            sharing a Group/Litter Name who also share a birthday and breed,
+            they&rsquo;re grouped automatically (see{" "}
+            <strong>4. Publish</strong> above). If a real littermate gets left
+            out &mdash; usually because its birthday or breed doesn&rsquo;t
+            quite match &mdash; you can add it in by hand.
+          </p>
+          <p>
+            On <strong>Manage Animals</strong>, use{" "}
+            <strong>+ Create Litter</strong> to start a new one, or check off
+            several animals and use the <strong>Add to Litter</strong> dropdown
+            that appears at the bottom to group them in one action. To adjust
+            just one animal, use the Litter dropdown on its own profile page
+            instead.
+          </p>
+          <Tip>
+            Every Litter dropdown lets you create a new litter inline, and
+            shows a trash icon next to each existing one to delete it &mdash;
+            deleting a litter only unlinks its animals, it doesn&rsquo;t
+            delete them.
           </Tip>
         </Section>
 

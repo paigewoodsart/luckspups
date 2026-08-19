@@ -14,9 +14,9 @@ export default function AdminDashboard() {
             Upload new data
           </h2>
           <p className="mt-2 text-brown-soft">
-            Upload an Animals in Care export (.xlsx) from Shelterluv or
-            AnimalsFirst to add or update animals. New uploads are screened
-            for duplicates before anything goes live.
+            Upload an Animals in Care export (.xlsx) from AnimalsFirst to add
+            or update animals. New uploads are screened for duplicates before
+            anything goes live.
           </p>
         </Link>
 
