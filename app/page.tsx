@@ -19,6 +19,7 @@ export default async function Home() {
   const unavailable = animals.filter((a) => a.animalStatus === UNAVAILABLE_STATUS);
   const browsable = animals.filter((a) => a.animalStatus !== UNAVAILABLE_STATUS);
   const { litters, individual } = groupByLitter(browsable);
+  const hasPriority = browsable.some((a) => a.priority);
 
   return (
     <div className="flex flex-1 flex-col">
@@ -64,6 +65,20 @@ export default async function Home() {
           listing, and we&rsquo;re unable to process individual adoption
           inquiries here.
         </p>
+        {hasPriority && (
+          <p className="mx-auto mt-3 flex max-w-lg items-center justify-center gap-1.5 text-sm font-semibold text-cream">
+            <svg
+              viewBox="0 0 24 32"
+              aria-hidden="true"
+              className="h-4 w-3 shrink-0 text-red-700"
+              fill="currentColor"
+            >
+              <path d="M0 0h24v32l-12-9-12 9V0z" />
+            </svg>
+            Animals with a bookmark are Luck&rsquo;s first-choice picks &mdash;
+            please consider them first for transport.
+          </p>
+        )}
         {lastUpdated && (
           <p className="mt-3 text-sm font-semibold text-cream">
             Last updated {formatAsOf(lastUpdated)}
