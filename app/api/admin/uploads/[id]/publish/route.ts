@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { createServerClient } from "@/lib/supabase-server";
+import { getAnimals } from "@/lib/data/animals";
+import { findLegacyLitterCandidates } from "@/lib/litters";
 
 interface StagedAnimalRow {
   id: string;
@@ -113,6 +115,47 @@ async function attachPhoto(
   }
 }
 
+// After publish, animals sharing a Groups/Litter Name value that also pass
+// the usual birthday/breed matching (lib/litters.ts) get promoted from a
+// text match into a real litters row -- so the litter shows up in the
+// admin's litter picker, and a littermate the heuristic excluded (a
+// mismatched birthday/breed) can be added to it there by hand. Matched by
+// source_group_key rather than name, so this can never fold into an
+// unrelated litter an admin happened to name the same thing.
+async function syncLegacyLittersToTable(supabase: ReturnType<typeof createServerClient>) {
+  const { animals } = await getAnimals();
+
+  for (const { key, matching } of findLegacyLitterCandidates(animals)) {
+    if (matching.length < 2) continue;
+
+    const { data: existing } = await supabase
+      .from("litters")
+      .select("id")
+      .eq("source_group_key", key)
+      .maybeSingle();
+
+    let litterId = existing?.id as string | undefined;
+
+    if (!litterId) {
+      const { data: created, error } = await supabase
+        .from("litters")
+        .insert({ name: key, source_group_key: key })
+        .select("id")
+        .single();
+      if (error || !created) continue;
+      litterId = created.id;
+    }
+
+    await supabase
+      .from("animals")
+      .update({ litter_id: litterId })
+      .in(
+        "id",
+        matching.map((a) => a.id)
+      );
+  }
+}
+
 export async function POST(
   request: Request,
   ctx: RouteContext<"/api/admin/uploads/[id]/publish">
@@ -171,6 +214,8 @@ export async function POST(
   }
 
   await supabase.from("uploads").update({ status: "published" }).eq("id", uploadId);
+
+  await syncLegacyLittersToTable(supabase);
 
   // Same cache-busting as the animal editor: without this, the public
   // roster and admin animals list can keep showing pre-publish data until

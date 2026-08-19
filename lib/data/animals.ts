@@ -30,6 +30,8 @@ interface AnimalRow {
   tags: string | null;
   story: string | null;
   priority: boolean;
+  litter_id: string | null;
+  litter: { id: string; name: string } | null;
   updated_at: string;
 }
 
@@ -67,6 +69,7 @@ function toAnimal(row: AnimalRow, photos: AnimalPhoto[]): Animal {
     photos,
     story: row.story,
     priority: row.priority,
+    litter: row.litter ? { id: row.litter.id, name: row.litter.name } : null,
   };
 }
 
@@ -100,7 +103,7 @@ export async function getAnimals(): Promise<{
 }> {
   const { data, error } = await supabase
     .from("animals")
-    .select("*")
+    .select("*, litter:litters(id, name)")
     .order("created_at", { ascending: false });
 
   if (error) throw error;
@@ -117,7 +120,10 @@ export async function getAnimals(): Promise<{
 export async function getAnimalsByIds(ids: string[]): Promise<Animal[]> {
   if (ids.length === 0) return [];
 
-  const { data, error } = await supabase.from("animals").select("*").in("id", ids);
+  const { data, error } = await supabase
+    .from("animals")
+    .select("*, litter:litters(id, name)")
+    .in("id", ids);
   if (error) throw error;
 
   const rows = (data ?? []) as AnimalRow[];

@@ -5,15 +5,30 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Animal } from "@/types/animal";
 import { Dropdown } from "@/components/Dropdown";
+import { CreateLitterModal } from "@/components/admin/CreateLitterModal";
+import type { LitterOption } from "@/lib/data/litters";
 import { statusLabel, sortStatusesByLabel } from "@/lib/status";
 
-export function AnimalsListClient({ animals }: { animals: Animal[] }) {
+const CREATE_LITTER_VALUE = "__create__";
+const ADD_TO_LITTER_PLACEHOLDER = "";
+
+export function AnimalsListClient({
+  animals,
+  litters,
+}: {
+  animals: Animal[];
+  litters: LitterOption[];
+}) {
   const router = useRouter();
   const [pending, setPending] = useState<Map<string, string>>(new Map());
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [busyPriorityId, setBusyPriorityId] = useState<string | null>(null);
   const [busyDeleteId, setBusyDeleteId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [litterOptions, setLitterOptions] = useState<LitterOption[]>(litters);
+  const [createLitterOpen, setCreateLitterOpen] = useState(false);
+  const [busyBatchLitter, setBusyBatchLitter] = useState(false);
 
   const statusOptions = useMemo(() => {
     const set = new Set(animals.map((a) => a.animalStatus));
@@ -67,8 +82,76 @@ export function AnimalsListClient({ animals }: { animals: Animal[] }) {
     router.refresh();
   }
 
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  async function assignSelectedToLitter(litterId: string) {
+    if (selectedIds.size === 0) return;
+    setBusyBatchLitter(true);
+    await fetch("/api/admin/animals/bulk-litter", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ animalIds: [...selectedIds], litterId }),
+    });
+    setBusyBatchLitter(false);
+    setSelectedIds(new Set());
+    router.refresh();
+  }
+
+  function handleBatchLitterChange(value: string) {
+    if (value === CREATE_LITTER_VALUE) {
+      setCreateLitterOpen(true);
+      return;
+    }
+    if (value) assignSelectedToLitter(value);
+  }
+
+  function handleLitterCreated(litter: LitterOption) {
+    setLitterOptions((prev) => [...prev, litter]);
+    setCreateLitterOpen(false);
+    if (selectedIds.size > 0) assignSelectedToLitter(litter.id);
+  }
+
+  async function handleDeleteLitter(litterId: string) {
+    const litter = litterOptions.find((l) => l.id === litterId);
+    if (!litter) return;
+    if (
+      !window.confirm(
+        `Delete litter "${litter.name}"? Its animals won't be deleted, just unlinked from the litter.`
+      )
+    ) {
+      return;
+    }
+
+    await fetch(`/api/admin/litters/${litterId}`, { method: "DELETE" });
+    setLitterOptions((prev) => prev.filter((l) => l.id !== litterId));
+    router.refresh();
+  }
+
   return (
-    <div className="pb-20">
+    <div className="pb-24">
+      <div className="mb-6 flex flex-wrap items-center gap-3">
+        <Link
+          href="/admin/animals/new"
+          className="rounded-full bg-sky-deep px-5 py-2.5 text-center text-sm font-semibold text-cream transition-opacity hover:opacity-90"
+        >
+          + Add Animal
+        </Link>
+        <button
+          type="button"
+          onClick={() => setCreateLitterOpen(true)}
+          className="rounded-full border border-sky-deep px-5 py-2.5 text-center text-sm font-semibold text-sky-deep transition-colors hover:bg-sky-soft"
+        >
+          + Create Litter
+        </button>
+      </div>
+
       <ul className="divide-y divide-sky rounded-2xl border border-sky bg-cream-soft">
         {animals.map((animal) => (
           <li
@@ -76,6 +159,15 @@ export function AnimalsListClient({ animals }: { animals: Animal[] }) {
             className="flex flex-wrap items-center justify-between gap-3 px-5 py-4"
           >
             <div className="flex items-center gap-3">
+              <label className="flex cursor-pointer items-center" title={`Select ${animal.name}`}>
+                <span className="sr-only">Select {animal.name}</span>
+                <input
+                  type="checkbox"
+                  checked={selectedIds.has(animal.id)}
+                  onChange={() => toggleSelect(animal.id)}
+                  className="h-4 w-4 accent-sky-deep"
+                />
+              </label>
               <button
                 type="button"
                 onClick={() => handleTogglePriority(animal)}
@@ -114,6 +206,7 @@ export function AnimalsListClient({ animals }: { animals: Animal[] }) {
                 <p className="text-sm text-brown-soft">
                   {animal.species}
                   {animal.breed ? ` · ${animal.breed}` : ""}
+                  {animal.litter ? ` · ${animal.litter.name}` : ""}
                 </p>
               </Link>
             </div>
@@ -165,20 +258,52 @@ export function AnimalsListClient({ animals }: { animals: Animal[] }) {
         ))}
       </ul>
 
-      {pending.size > 0 && (
+      {(selectedIds.size > 0 || pending.size > 0) && (
         <div className="fixed inset-x-0 bottom-0 z-20 border-t border-brown bg-brown px-6 py-4 shadow-[0_-4px_16px_rgba(0,0,0,0.18)] sm:px-10">
-          <div className="mx-auto flex max-w-3xl items-center justify-between gap-4">
-            <p className="text-sm font-semibold text-cream">
-              {pending.size} status change{pending.size === 1 ? "" : "s"} pending
-            </p>
-            <button
-              type="button"
-              onClick={handleSaveAll}
-              disabled={saving}
-              className="rounded-full bg-sky-deep px-6 py-2.5 text-sm font-semibold text-cream transition-opacity hover:opacity-90 disabled:opacity-60"
-            >
-              {saving ? "Saving…" : "Save changes"}
-            </button>
+          <div className="mx-auto flex max-w-3xl flex-col gap-3">
+            {selectedIds.size > 0 && (
+              <div className="flex items-center justify-between gap-4">
+                <p className="text-sm font-semibold text-cream">
+                  {selectedIds.size} animal{selectedIds.size === 1 ? "" : "s"} selected
+                </p>
+                <div className="flex items-center gap-3">
+                  <Dropdown
+                    options={[
+                      { value: ADD_TO_LITTER_PLACEHOLDER, label: "Add to Litter" },
+                      ...litterOptions.map((l) => ({ value: l.id, label: l.name, deletable: true })),
+                      { value: CREATE_LITTER_VALUE, label: "+ Create new litter…" },
+                    ]}
+                    value={ADD_TO_LITTER_PLACEHOLDER}
+                    onChange={handleBatchLitterChange}
+                    onDeleteOption={handleDeleteLitter}
+                    className={`w-48 ${busyBatchLitter ? "opacity-60" : ""}`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setSelectedIds(new Set())}
+                    className="text-sm font-semibold text-cream underline"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {pending.size > 0 && (
+              <div className="flex items-center justify-between gap-4">
+                <p className="text-sm font-semibold text-cream">
+                  {pending.size} status change{pending.size === 1 ? "" : "s"} pending
+                </p>
+                <button
+                  type="button"
+                  onClick={handleSaveAll}
+                  disabled={saving}
+                  className="rounded-full bg-sky-deep px-6 py-2.5 text-sm font-semibold text-cream transition-opacity hover:opacity-90 disabled:opacity-60"
+                >
+                  {saving ? "Saving…" : "Save changes"}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -188,6 +313,12 @@ export function AnimalsListClient({ animals }: { animals: Animal[] }) {
           Statuses updated.
         </p>
       )}
+
+      <CreateLitterModal
+        open={createLitterOpen}
+        onClose={() => setCreateLitterOpen(false)}
+        onCreated={handleLitterCreated}
+      />
     </div>
   );
 }

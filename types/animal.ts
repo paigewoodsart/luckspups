@@ -36,6 +36,7 @@ export interface Animal {
   photos: AnimalPhoto[];
   story: string | null;
   priority: boolean;
+  litter: { id: string; name: string } | null;
 }
 
 export interface AnimalPhoto {

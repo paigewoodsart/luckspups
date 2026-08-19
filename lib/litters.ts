@@ -1,7 +1,8 @@
 import type { Animal } from "@/types/animal";
 
 export interface LitterGroup {
-  key: string;
+  id: string;
+  name: string;
   animals: Animal[];
 }
 
@@ -52,6 +53,12 @@ function mostCommon(values: (string | null)[]): string | null {
   return best;
 }
 
+export interface LegacyLitterCandidate {
+  key: string;
+  matching: Animal[];
+  mismatched: Animal[];
+}
+
 /**
  * The source system's "Groups"/"Litter Name" fields are filled in by hand and
  * occasionally rope in unrelated animals (e.g. strays found together and
@@ -62,22 +69,25 @@ function mostCommon(values: (string | null)[]): string | null {
  * Crew" mixes a Cattle Dog and a Chihuahua under one shared estimated
  * birthdate, so despite the matching date it correctly falls apart into
  * individual animals rather than a false litter.
+ *
+ * Shared between the public render path (groupByLitter, below) and the
+ * upload-publish sync (which turns a passing candidate into a real litters
+ * row) -- both need the exact same matching behavior. Animals that already
+ * have an explicit admin-assigned litter are skipped entirely; a deliberate
+ * manual grouping doesn't need this heuristic second-guessing it.
  */
-export function groupByLitter(animals: Animal[]): LitterGrouping {
+export function findLegacyLitterCandidates(animals: Animal[]): LegacyLitterCandidate[] {
   const buckets = new Map<string, Animal[]>();
-  const individual: Animal[] = [];
 
   for (const animal of animals) {
+    if (animal.litter) continue;
     const key = animal.groups || animal.litterName;
-    if (!key) {
-      individual.push(animal);
-      continue;
-    }
+    if (!key) continue;
     if (!buckets.has(key)) buckets.set(key, []);
     buckets.get(key)!.push(animal);
   }
 
-  const litterEntries: { group: LitterGroup; birthday: string | null }[] = [];
+  const candidates: LegacyLitterCandidate[] = [];
 
   for (const [key, members] of buckets) {
     const modeBirthday = mostCommon(members.map((a) => a.birthday));
@@ -90,11 +100,52 @@ export function groupByLitter(animals: Animal[]): LitterGrouping {
     );
     const mismatched = members.filter((a) => !matching.includes(a));
 
+    candidates.push({ key, matching, mismatched });
+  }
+
+  return candidates;
+}
+
+/**
+ * An animal with an explicit admin-assigned litter (animal.litter) is
+ * grouped by its litter id unconditionally -- no birthday/breed check, and
+ * it counts as a litter even with just one member so far. Everyone else
+ * goes through findLegacyLitterCandidates above.
+ */
+export function groupByLitter(animals: Animal[]): LitterGrouping {
+  const individual: Animal[] = [];
+  const litterEntries: { group: LitterGroup; birthday: string | null }[] = [];
+
+  const explicitBuckets = new Map<string, { name: string; animals: Animal[] }>();
+  const legacyCandidates: Animal[] = [];
+
+  for (const animal of animals) {
+    if (animal.litter) {
+      const bucket = explicitBuckets.get(animal.litter.id);
+      if (bucket) bucket.animals.push(animal);
+      else explicitBuckets.set(animal.litter.id, { name: animal.litter.name, animals: [animal] });
+    } else {
+      legacyCandidates.push(animal);
+      if (!(animal.groups || animal.litterName)) individual.push(animal);
+    }
+  }
+
+  for (const [id, { name, animals: members }] of explicitBuckets) {
+    litterEntries.push({
+      group: { id, name, animals: members },
+      birthday: mostCommon(members.map((a) => a.birthday)),
+    });
+  }
+
+  for (const { key, matching, mismatched } of findLegacyLitterCandidates(legacyCandidates)) {
     if (matching.length >= 2) {
-      litterEntries.push({ group: { key, animals: matching }, birthday: modeBirthday });
+      litterEntries.push({
+        group: { id: key, name: key, animals: matching },
+        birthday: mostCommon(matching.map((a) => a.birthday)),
+      });
       individual.push(...mismatched);
     } else {
-      individual.push(...members);
+      individual.push(...matching, ...mismatched);
     }
   }
 

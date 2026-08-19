@@ -3,19 +3,33 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Animal } from "@/types/animal";
+import { Dropdown } from "@/components/Dropdown";
+import { CreateLitterModal } from "@/components/admin/CreateLitterModal";
+import type { LitterOption } from "@/lib/data/litters";
+
+const CREATE_LITTER_VALUE = "__create__";
 
 interface StagedFile {
   file: File;
   previewUrl: string;
 }
 
-export function AnimalEditForm({ animal }: { animal: Animal }) {
+export function AnimalEditForm({
+  animal,
+  litters,
+}: {
+  animal: Animal;
+  litters: LitterOption[];
+}) {
   const router = useRouter();
   const [story, setStory] = useState(animal.story ?? "");
   const [staged, setStaged] = useState<StagedFile[]>([]);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [busyPhotoId, setBusyPhotoId] = useState<string | null>(null);
+  const [litterOptions, setLitterOptions] = useState<LitterOption[]>(litters);
+  const [busyLitter, setBusyLitter] = useState(false);
+  const [createLitterOpen, setCreateLitterOpen] = useState(false);
 
   function handleFilesChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
@@ -71,6 +85,47 @@ export function AnimalEditForm({ animal }: { animal: Animal }) {
     setBusyPhotoId(photoId);
     await fetch(`/api/admin/animals/${animal.id}/photos/${photoId}`, { method: "DELETE" });
     setBusyPhotoId(null);
+    router.refresh();
+  }
+
+  async function assignLitter(litterId: string | null) {
+    setBusyLitter(true);
+    await fetch(`/api/admin/animals/${animal.id}/litter`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ litterId }),
+    });
+    setBusyLitter(false);
+    router.refresh();
+  }
+
+  function handleLitterChange(value: string) {
+    if (value === CREATE_LITTER_VALUE) {
+      setCreateLitterOpen(true);
+      return;
+    }
+    assignLitter(value || null);
+  }
+
+  function handleLitterCreated(litter: LitterOption) {
+    setLitterOptions((prev) => [...prev, litter]);
+    setCreateLitterOpen(false);
+    assignLitter(litter.id);
+  }
+
+  async function handleDeleteLitter(litterId: string) {
+    const litter = litterOptions.find((l) => l.id === litterId);
+    if (!litter) return;
+    if (
+      !window.confirm(
+        `Delete litter "${litter.name}"? Its animals won't be deleted, just unlinked from the litter.`
+      )
+    ) {
+      return;
+    }
+
+    await fetch(`/api/admin/litters/${litterId}`, { method: "DELETE" });
+    setLitterOptions((prev) => prev.filter((l) => l.id !== litterId));
     router.refresh();
   }
 
@@ -166,6 +221,23 @@ export function AnimalEditForm({ animal }: { animal: Animal }) {
 
       <div>
         <h2 className="mb-3 font-display uppercase tracking-wide text-xl text-sky-deep">
+          Litter
+        </h2>
+        <Dropdown
+          options={[
+            { value: "", label: "— No litter —" },
+            ...litterOptions.map((l) => ({ value: l.id, label: l.name, deletable: true })),
+            { value: CREATE_LITTER_VALUE, label: "+ Create new litter…" },
+          ]}
+          value={animal.litter?.id ?? ""}
+          onChange={handleLitterChange}
+          onDeleteOption={handleDeleteLitter}
+          className={busyLitter ? "opacity-60" : ""}
+        />
+      </div>
+
+      <div>
+        <h2 className="mb-3 font-display uppercase tracking-wide text-xl text-sky-deep">
           Story
         </h2>
         <textarea
@@ -191,6 +263,12 @@ export function AnimalEditForm({ animal }: { animal: Animal }) {
         </button>
         {saved && <span className="text-sm font-semibold text-brown-soft">Saved!</span>}
       </div>
+
+      <CreateLitterModal
+        open={createLitterOpen}
+        onClose={() => setCreateLitterOpen(false)}
+        onCreated={handleLitterCreated}
+      />
     </div>
   );
 }

@@ -43,6 +43,7 @@ export async function POST(request: Request) {
       altered_before_arrival: field(formData, "alteredBeforeArrival"),
       altered_in_care: field(formData, "alteredInCare"),
       litter_name: field(formData, "litterName"),
+      litter_id: field(formData, "litterId"),
       birthday: field(formData, "birthday"),
       estimated_age: field(formData, "estimatedAge"),
       age_group: field(formData, "ageGroup"),

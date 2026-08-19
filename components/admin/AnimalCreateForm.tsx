@@ -4,6 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Dropdown } from "@/components/Dropdown";
 import { statusLabel, sortStatusesByLabel } from "@/lib/status";
+import { CreateLitterModal } from "@/components/admin/CreateLitterModal";
+import type { LitterOption } from "@/lib/data/litters";
+
+const CREATE_LITTER_VALUE = "__create__";
 
 const KNOWN_STATUSES = [
   "Transport Approved",
@@ -56,6 +60,7 @@ interface FormState {
   animalStatus: string;
   groups: string;
   litterName: string;
+  litterId: string;
   locationStatus: string;
   admissionType: string;
   intakeDate: string;
@@ -87,6 +92,7 @@ const initialState: FormState = {
   animalStatus: "Status Pending",
   groups: "",
   litterName: "",
+  litterId: "",
   locationStatus: "",
   admissionType: "Transfer In",
   intakeDate: new Date().toISOString().slice(0, 10),
@@ -122,12 +128,14 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-export function AnimalCreateForm() {
+export function AnimalCreateForm({ litters }: { litters: LitterOption[] }) {
   const router = useRouter();
   const [form, setForm] = useState<FormState>(initialState);
   const [staged, setStaged] = useState<StagedFile[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [litterOptions, setLitterOptions] = useState<LitterOption[]>(litters);
+  const [createLitterOpen, setCreateLitterOpen] = useState(false);
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -149,6 +157,37 @@ export function AnimalCreateForm() {
     });
   }
 
+  function handleLitterChange(value: string) {
+    if (value === CREATE_LITTER_VALUE) {
+      setCreateLitterOpen(true);
+      return;
+    }
+    set("litterId", value);
+  }
+
+  function handleLitterCreated(litter: LitterOption) {
+    setLitterOptions((prev) => [...prev, litter]);
+    set("litterId", litter.id);
+    setCreateLitterOpen(false);
+  }
+
+  async function handleDeleteLitter(litterId: string) {
+    const litter = litterOptions.find((l) => l.id === litterId);
+    if (!litter) return;
+    if (
+      !window.confirm(
+        `Delete litter "${litter.name}"? Its animals won't be deleted, just unlinked from the litter.`
+      )
+    ) {
+      return;
+    }
+
+    await fetch(`/api/admin/litters/${litterId}`, { method: "DELETE" });
+    setLitterOptions((prev) => prev.filter((l) => l.id !== litterId));
+    if (form.litterId === litterId) set("litterId", "");
+    router.refresh();
+  }
+
   const canSubmit =
     form.name.trim() !== "" && (form.species !== "other" || form.speciesOther.trim() !== "");
 
@@ -166,6 +205,7 @@ export function AnimalCreateForm() {
     data.append("externalId", form.externalId);
     data.append("groups", form.groups);
     data.append("litterName", form.litterName);
+    data.append("litterId", form.litterId);
     data.append("locationStatus", form.locationStatus);
     data.append("admissionType", form.admissionType);
     data.append("intakeDate", form.intakeDate);
@@ -266,6 +306,18 @@ export function AnimalCreateForm() {
               value={form.litterName}
               onChange={(e) => set("litterName", e.target.value)}
               className={textInputClass}
+            />
+          </Field>
+          <Field label="Litter">
+            <Dropdown
+              options={[
+                { value: "", label: "— No litter —" },
+                ...litterOptions.map((l) => ({ value: l.id, label: l.name, deletable: true })),
+                { value: CREATE_LITTER_VALUE, label: "+ Create new litter…" },
+              ]}
+              value={form.litterId}
+              onChange={handleLitterChange}
+              onDeleteOption={handleDeleteLitter}
             />
           </Field>
         </div>
@@ -502,6 +554,12 @@ export function AnimalCreateForm() {
       >
         {saving ? "Creating…" : "Create Animal"}
       </button>
+
+      <CreateLitterModal
+        open={createLitterOpen}
+        onClose={() => setCreateLitterOpen(false)}
+        onCreated={handleLitterCreated}
+      />
     </form>
   );
 }

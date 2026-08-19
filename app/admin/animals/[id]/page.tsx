@@ -3,12 +3,13 @@ import { AdminHeader } from "@/components/admin/AdminHeader";
 import { Breadcrumbs } from "@/components/admin/Breadcrumbs";
 import { AnimalEditForm } from "@/components/admin/AnimalEditForm";
 import { getAnimalsByIds } from "@/lib/data/animals";
+import { getLitters } from "@/lib/data/litters";
 
 export default async function AdminAnimalEditPage({
   params,
 }: PageProps<"/admin/animals/[id]">) {
   const { id } = await params;
-  const [animal] = await getAnimalsByIds([id]);
+  const [[animal], litters] = await Promise.all([getAnimalsByIds([id]), getLitters()]);
 
   if (!animal) notFound();
 
@@ -27,7 +28,7 @@ export default async function AdminAnimalEditPage({
           {animal.species}
           {animal.breed ? ` · ${animal.breed}` : ""} &middot; {animal.animalStatus}
         </p>
-        <AnimalEditForm animal={animal} />
+        <AnimalEditForm animal={animal} litters={litters} />
       </main>
     </div>
   );

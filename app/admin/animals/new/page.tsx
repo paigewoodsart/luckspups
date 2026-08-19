@@ -1,8 +1,11 @@
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { Breadcrumbs } from "@/components/admin/Breadcrumbs";
 import { AnimalCreateForm } from "@/components/admin/AnimalCreateForm";
+import { getLitters } from "@/lib/data/litters";
 
-export default function AdminAnimalCreatePage() {
+export default async function AdminAnimalCreatePage() {
+  const litters = await getLitters();
+
   return (
     <div className="flex flex-1 flex-col">
       <AdminHeader title="Add Animal" />
@@ -18,7 +21,7 @@ export default function AdminAnimalCreatePage() {
           Hand-enter an animal that didn&rsquo;t come from a roster upload &mdash; e.g. one
           from a different partner rescue.
         </p>
-        <AnimalCreateForm />
+        <AnimalCreateForm litters={litters} />
       </main>
     </div>
   );

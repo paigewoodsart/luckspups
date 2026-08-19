@@ -212,7 +212,7 @@ export function AnimalBrowser({
           ].filter(Boolean);
 
           return (
-            <section key={litter.key}>
+            <section key={litter.id}>
               <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2">
                 <SelectLitterCheckbox
                   litterAnimals={litter.animals}
@@ -220,7 +220,7 @@ export function AnimalBrowser({
                   onToggleLitter={toggleLitter}
                 />
                 <h2 className="font-display uppercase tracking-wide text-3xl text-sky-deep">
-                  {litter.key}
+                  {litter.name}
                 </h2>
                 <span className="text-sm text-brown-soft">{details.join(" · ")}</span>
               </div>
